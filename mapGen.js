@@ -55,18 +55,17 @@ function MapObj(context, mapArray) {
     return this;
 }
 
-function SpriteObj(context, imgSheet, rows, cols, walkingOffset) {
+function SpriteObj(context, imgSheet, rows, cols, point) {
     this.context = context;
     this.img = loadImage(imgSheet);
     this.width = this.img.width / cols;
     this.height = this.img.height / rows;
-    this.walkingOffset = walkingOffset;
-    this.verticalOffset = 25;
-    this.draw = function(x, y) {
+    this.point = point.add(-this.width / 2, -this.height);
+    this.draw = function() {
         // image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
         this.context.drawImage(this.img,
             0, 0, this.width, this.height,  // Source
-            x - this.width / 2, y + this.verticalOffset - this.height / 2 - this.walkingOffset, this.width, this.height);  // Destination
+            this.point.x, this.point.y, this.width, this.height);  // Destination
     }
 }
 
@@ -84,12 +83,15 @@ function GameObj(canvas) {
     ];
     this.map = new MapObj(this.context, this.mapArray);
     this.isometricSize = this.map.isometricSize;
-    this.sprite = new SpriteObj(this.context, "sprites/Slime compact.png", 4, 4, 5);
+    this.sprite = undefined;
     this.init = function() {
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
-        let iPoint = (new PointObj(3, 0)).convert();
-        this.sprite.draw(iPoint.x * this.isometricSize, iPoint.y * this.isometricSize);
+        let Point = (new PointObj(3, 0)).multi(this.isometricSize);
+        let iPoint = Point.convert().add(0, this.map.tiles[0].height / 2);
+        this.sprite = new SpriteObj(
+            this.context, "sprites/Slime compact.png", 4, 4, iPoint);
+        this.sprite.draw();
     }
     return this;
 }
