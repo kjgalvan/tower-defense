@@ -9,17 +9,20 @@ function PointObj(x, y, type="Cartesian") {
     this.x = x;
     this.y = y;
     this.type = type;
+    this.toCartesian = function() {
+        return new PointObj((2*this.y + this.x) / 2, (2*this.y - this.x) / 2);
+    };
+    this.toIsometric = function() {
+        return new PointObj(this.y - this.x, (this.x + this.y) / 2, "Isometric");
+    };
     this.convert = function() {
-        let Point;
-        if (this.type == "Cartesian") {
-            Point = new PointObj(
-                this.y - this.x, (this.x + this.y) / 2, "Isometric");
-        }
-        else {
-            Point = new PointObj(
-                (2*this.y + this.x) / 2, (2*this.y - this.x) / 2, "Cartesian");
-        }
-        return Point;
+        return this.type == "Cartesian" ? this.toIsometric() : this.toCartesian();
+    };
+    this.add = function(z, y=undefined) {
+        return new PointObj(this.x + z, this.y + (y ? y : z), this.type);
+    };
+    this.multi = function(z, y=undefined) {
+        return new PointObj(this.x * z, this.y * (y ? y : z), this.type);
     };
     return this;
 }
