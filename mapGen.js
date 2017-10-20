@@ -1,7 +1,6 @@
 function loadImage(Name) {
-    const basePath = "roadTiles_v2/png/";
     let img = new Image();
-    img.src = basePath + Name + ".png";
+    img.src = Name;
     return img;
 }
 
@@ -30,14 +29,15 @@ function MapObj(canvas, context, mapArray) {
     this.context = context;
     this.mapArray = mapArray;
     this.isometricSize = 50;
+    let basePath = "roadTiles_v2/png/";
     this.tiles = [
-        loadImage("grass"),
-        loadImage("roadNorth"),
-        loadImage("roadEast"),
-        loadImage("roadCornerES"),
-        loadImage("roadCornerNE"),
-        loadImage("roadCornerWS"),
-        loadImage("roadCornerNW"),
+        loadImage(basePath + "grass.png"),
+        loadImage(basePath + "roadNorth.png"),
+        loadImage(basePath + "roadEast.png"),
+        loadImage(basePath + "roadCornerES.png"),
+        loadImage(basePath + "roadCornerNE.png"),
+        loadImage(basePath + "roadCornerWS.png"),
+        loadImage(basePath + "roadCornerNW.png"),
     ];
     this.draw = function() {
         let rowAmount = mapArray.length, colAmount = mapArray[0].length;
@@ -56,8 +56,7 @@ function MapObj(canvas, context, mapArray) {
 
 function SpriteObj(context, imgSheet, rows, cols, walkingOffset) {
     this.context = context;
-    this.img = new Image();
-    this.img.src = imgSheet;
+    this.img = loadImage(imgSheet);
     this.width = this.img.width / cols;
     this.height = this.img.height / rows;
     this.walkingOffset = walkingOffset;
@@ -83,7 +82,7 @@ function GameObj(canvas) {
         [1, 1, 1, 4, 0, 0, 0]
     ];
     this.map = new MapObj(this.canvas, this.context, this.mapArray);
-    this.sprite = new SpriteObj(this.context, "D:/CollegeWork/CS262_GameDesign/Project/sprites/Slime compact.png", 4, 4, 5);
+    this.sprite = new SpriteObj(this.context, "sprites/Slime compact.png", 4, 4, 5);
     this.init = function() {
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
