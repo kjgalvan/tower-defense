@@ -67,11 +67,21 @@ function SpriteObj(context, imgSheet, rows, cols, point) {
             0, 0, this.width, this.height,  // Source
             this.point.x, this.point.y, this.width, this.height);  // Destination
     }
+    this.move = function(heading) {
+        this.point = this.point.add(heading.x, heading.y);
+    };
+    return this;
 }
 
 function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
+    this.directions = {
+        "north": (new PointObj(0, -1)).convert(),
+        "south": (new PointObj(0, 1)).convert(),
+        "east": (new PointObj(1, 0)).convert(),
+        "west": (new PointObj(-1, 0)).convert(),
+    };
     this.mapArray = [
         [0, 5, 1, 1, 1, 6, 0],
         [0, 2, 0, 0, 0, 3, 6],
@@ -86,17 +96,25 @@ function GameObj(canvas) {
     this.sprite = undefined;
     this.init = function() {
         this.context.translate(this.canvas.width / 2, 0);
-        this.map.draw();
         let Point = (new PointObj(3, 0)).multi(this.isometricSize);
         let iPoint = Point.convert().add(0, this.map.tiles[0].height / 2);
         this.sprite = new SpriteObj(
             this.context, "sprites/Slime compact.png", 4, 4, iPoint);
-        this.sprite.draw();
     }
+    this.draw = function() {
+        this.context.clearRect(0, 0, this.canvas.height, this.canvas.width);
+        this.map.draw();
+        this.sprite.draw();
+    };
+    this.loop = function() {
+        this.draw();
+        this.sprite.move(this.directions["south"]);
+    };
     return this;
 }
 
 function init() {
     let game = new GameObj(document.querySelector("CANVAS"));
     game.init();
+    setInterval(game.loop.bind(game), 30);
 }
