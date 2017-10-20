@@ -27,11 +27,9 @@ function PointObj(x, y, type="Cartesian") {
     return this;
 }
 
-function MapObj(canvas, context, mapArray) {
-    this.canvas = canvas;
+function MapObj(context, mapArray) {
     this.context = context;
     this.mapArray = mapArray;
-    this.isometricSize = 50;
     let basePath = "roadTiles_v2/png/";
     this.tiles = [
         loadImage(basePath + "grass.png"),
@@ -42,15 +40,15 @@ function MapObj(canvas, context, mapArray) {
         loadImage(basePath + "roadCornerWS.png"),
         loadImage(basePath + "roadCornerNW.png"),
     ];
+    this.isometricSize = this.tiles[0].width / 2;
     this.draw = function() {
         let rowAmount = mapArray.length, colAmount = mapArray[0].length;
+        let iPoint;
         for (i = 0; i < rowAmount; ++i) {
             for (j = 0; j < colAmount; ++j) {
-                iPoint = (new PointObj(i, j)).convert();
-                this.context.drawImage(
-                    this.tiles[this.mapArray[i][j]],
-                    iPoint.x*this.isometricSize - this.isometricSize,
-                    iPoint.y*this.isometricSize);
+                iPoint = (new PointObj(i, j)).convert().multi(this.isometricSize);
+                this.context.drawImage(this.tiles[this.mapArray[i][j]],
+                    iPoint.x - this.isometricSize, iPoint.y);
             }
         }
     }
@@ -84,13 +82,14 @@ function GameObj(canvas) {
         [0, 0, 0, 2, 0, 0, 0],
         [1, 1, 1, 4, 0, 0, 0]
     ];
-    this.map = new MapObj(this.canvas, this.context, this.mapArray);
+    this.map = new MapObj(this.context, this.mapArray);
+    this.isometricSize = this.map.isometricSize;
     this.sprite = new SpriteObj(this.context, "sprites/Slime compact.png", 4, 4, 5);
     this.init = function() {
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
         let iPoint = (new PointObj(3, 0)).convert();
-        this.sprite.draw(iPoint.x * 50, iPoint.y * 50);
+        this.sprite.draw(iPoint.x * this.isometricSize, iPoint.y * this.isometricSize);
     }
     return this;
 }
