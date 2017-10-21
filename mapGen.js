@@ -95,16 +95,18 @@ function GameObj(canvas) {
     this.isometricSize = this.map.isometricSize;
     this.sprite = undefined;
     this.init = function() {
-        this.context.translate(this.canvas.width / 2, 0);
         let Point = (new PointObj(3, 0)).multi(this.isometricSize);
         let iPoint = Point.convert().add(0, this.map.tiles[0].height / 2);
         this.sprite = new SpriteObj(
             this.context, "sprites/Slime compact.png", 4, 4, iPoint);
     }
     this.draw = function() {
-        this.context.clearRect(0, 0, this.canvas.height, this.canvas.width);
+        this.context.save();
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
         this.sprite.draw();
+        this.context.restore();
     };
     this.loop = function() {
         this.draw();
