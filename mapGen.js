@@ -13,7 +13,7 @@ function PointObj(x, y, type="Cartesian") {
         return new PointObj((2*this.y + this.x) / 2, (2*this.y - this.x) / 2);
     };
     this.toIsometric = function() {
-        return new PointObj(this.y - this.x, (this.x + this.y) / 2, "Isometric");
+        return new PointObj(this.x - this.y, (this.x + this.y) / 2, "Isometric");
     };
     this.convert = function() {
         return this.type == "Cartesian" ? this.toIsometric() : this.toCartesian();
@@ -44,10 +44,10 @@ function MapObj(context, mapArray) {
     this.draw = function() {
         let rowAmount = mapArray.length, colAmount = mapArray[0].length;
         let iPoint;
-        for (i = 0; i < rowAmount; ++i) {
-            for (j = 0; j < colAmount; ++j) {
-                iPoint = (new PointObj(i, j)).convert().multi(this.isometricSize);
-                this.context.drawImage(this.tiles[this.mapArray[i][j]],
+        for (x = 0; x < rowAmount; ++x) {
+            for (y = 0; y < colAmount; ++y) {
+                iPoint = (new PointObj(y, x)).convert().multi(this.isometricSize);
+                this.context.drawImage(this.tiles[this.mapArray[x][y]],
                     iPoint.x - this.isometricSize, iPoint.y);
             }
         }
