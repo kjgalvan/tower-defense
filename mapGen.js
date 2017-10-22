@@ -19,20 +19,25 @@ function PointObj(x, y, type="Cartesian") {
         return this.type == "Cartesian" ? this.toIsometric() : this.toCartesian();
     };
     this.add = function(z, y=undefined) {
-        return new PointObj(this.x + z, this.y + (y ? y : z), this.type);
+        y = (y !== undefined ? y : z);
+        return new PointObj(this.x + z, this.y + y, this.type);
     };
     this.multi = function(z, y=undefined) {
-        return new PointObj(this.x * z, this.y * (y ? y : z), this.type);
+        y = (y !== undefined ? y : z);
+        return new PointObj(this.x * z, this.y * y, this.type);
     };
     this.div = function(z, y=undefined) {
-        return new PointObj(this.x / z, this.y / (y ? y : z), this.type);
+        y = (y !== undefined ? y : z);
+        return new PointObj(this.x / z, this.y / y, this.type);
     };
     this.fdiv = function(z, y=undefined) {
-        return new PointObj(Math.floor(this.x / z),
-                            Math.floor(this.y / (y ? y : z)), this.type);
+        y = (y !== undefined ? y : z);
+        return new PointObj(
+            Math.floor( this.x / z), Math.floor(this.y / y), this.type);
     };
     this.mod = function(z, y=undefined) {
-        return new PointObj(this.x % z, this.y % (y ? y : z), this.type);
+        y = (y !== undefined ? y : z);
+        return new PointObj(this.x % z, this.y % (y), this.type);
     };
     return this;
 }
