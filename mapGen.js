@@ -24,6 +24,16 @@ function PointObj(x, y, type="Cartesian") {
     this.multi = function(z, y=undefined) {
         return new PointObj(this.x * z, this.y * (y ? y : z), this.type);
     };
+    this.div = function(z, y=undefined) {
+        return new PointObj(this.x / z, this.y / (y ? y : z), this.type);
+    };
+    this.fdiv = function(z, y=undefined) {
+        return new PointObj(Math.floor(this.x / z),
+                            Math.floor(this.y / (y ? y : z)), this.type);
+    };
+    this.mod = function(z, y=undefined) {
+        return new PointObj(this.x % z, this.y % (y ? y : z), this.type);
+    };
     return this;
 }
 
@@ -66,7 +76,7 @@ function SpriteObj(context, imgSheet, rows, cols, point) {
         this.context.drawImage(this.img,
             0, 0, this.width, this.height,  // Source
             this.point.x, this.point.y, this.width, this.height);  // Destination
-    }
+    };
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
@@ -108,9 +118,17 @@ function GameObj(canvas) {
         this.sprite.draw();
         this.context.restore();
     };
+    this.getGridPos = function(Point) {
+        return Point.fdiv(this.isometricSize);
+    };
+    this.getTilePos = function(Point) {
+        return Point.mod(this.isometricSize);
+    };
     this.loop = function() {
         this.draw();
         this.sprite.move(this.directions["south"]);
+        console.log("Grid", this.getGridPos(this.sprite.point.convert()));
+        console.log("Tile", this.getTilePos(this.sprite.point.convert()));
     };
     return this;
 }
