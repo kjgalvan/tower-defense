@@ -75,12 +75,14 @@ function SpriteObj(context, imgSheet, rows, cols, point) {
     this.img = loadImage(imgSheet);
     this.width = this.img.width / cols;
     this.height = this.img.height / rows;
-    this.point = point.add(-this.width / 2, -this.height);
+    this.point = point;
+    this.centerFeet = new PointObj(-this.width / 2, -this.height);
     this.draw = function() {
         // image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
+        let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
         this.context.drawImage(this.img,
             0, 0, this.width, this.height,  // Source
-            this.point.x, this.point.y, this.width, this.height);  // Destination
+            drawPos.x, drawPos.y, this.width, this.height);  // Destination
     };
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
@@ -92,10 +94,14 @@ function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
     this.directions = {
-        "north": (new PointObj(0, -1)).convert(),
-        "south": (new PointObj(0, 1)).convert(),
-        "east": (new PointObj(1, 0)).convert(),
-        "west": (new PointObj(-1, 0)).convert(),
+        "N": (new PointObj(0, -1)).convert(),
+        "S": (new PointObj(0, 1)).convert(),
+        "E": (new PointObj(1, 0)).convert(),
+        "W": (new PointObj(-1, 0)).convert(),
+        "NE": (new PointObj(1, -1)).convert(),
+        "NW": (new PointObj(-1, -1)).convert(),
+        "SE": (new PointObj(1, 1)).convert(),
+        "SW": (new PointObj(-1, 1)).convert(),
     };
     this.mapArray = [
         [0, 5, 1, 1, 1, 6, 0],
