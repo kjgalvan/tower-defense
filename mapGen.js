@@ -116,11 +116,11 @@ function GameObj(canvas) {
     this.isometricSize = this.map.isometricSize;
     this.sprite = undefined;
     this.init = function() {
-        let Point = (new PointObj(3, 0)).multi(this.isometricSize);
+        let Point = (new PointObj(0, 6)).multi(this.isometricSize);
         let iPoint = Point.convert().add(0, this.map.tiles[0].height / 2);
         this.sprite = new SpriteObj(
             this.context, "sprites/Slime compact.png", 4, 4, iPoint);
-    }
+    };
     this.draw = function() {
         this.context.save();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -135,11 +135,25 @@ function GameObj(canvas) {
     this.getTilePos = function(Point) {
         return Point.mod(this.isometricSize);
     };
+    this.tileMovement = function(sprite) {
+        // console.log("gridPos", sprite.point.convert().div(50));
+        let gridPos = this.getGridPos(sprite.point.convert());
+        // console.log("final", gridPos);
+        let gridVal = this.mapArray[gridPos.y][gridPos.x];
+        console.log("gridVal", gridVal);
+        switch (gridVal) {
+            case 0: sprite.move(this.directions["NE"]); break;
+            case 1: sprite.move(this.directions["E"]); break;
+            case 2: sprite.move(this.directions["N"]); break;
+            case 3: sprite.move(this.directions["SE"]); break;
+            case 4: sprite.move(this.directions["NE"]); break;
+            case 5: sprite.move(this.directions["NE"]); break;
+            case 6: sprite.move(this.directions["SE"]); break;
+        }
+    };
     this.loop = function() {
         this.draw();
-        this.sprite.move(this.directions["south"]);
-        console.log("Grid", this.getGridPos(this.sprite.point.convert()));
-        console.log("Tile", this.getTilePos(this.sprite.point.convert()));
+        this.tileMovement(this.sprite);
     };
     return this;
 }
