@@ -102,7 +102,7 @@ function GameObj(canvas) {
         "NW": (new PointObj(-1, -1)).convert(),
         "SE": (new PointObj(1, 1)).convert(),
         "SW": (new PointObj(-1, 1)).convert(),
-    };
+    }
     this.mapArray = [
         [0, 5, 1, 1, 1, 6, 0],
         [0, 2, 0, 0, 0, 3, 6],
@@ -114,12 +114,52 @@ function GameObj(canvas) {
     ];
     this.map = new MapObj(this.context, this.mapArray);
     this.isometricSize = this.map.isometricSize;
+    this.movement = {"amount": 0, "heading": "E"};
     this.sprite = undefined;
     this.init = function() {
         let Point = (new PointObj(0, 6)).multi(this.isometricSize);
         let iPoint = Point.convert().add(0, this.map.tiles[0].height / 2);
         this.sprite = new SpriteObj(
             this.context, "sprites/Slime compact.png", 4, 4, iPoint);
+    };
+    this.getGridPos = function(Point) {
+        return Point.fdiv(this.isometricSize);
+    };
+    this.getTilePos = function(Point) {
+        return Point.mod(this.isometricSize);
+    };
+    this.tileMovement = function(sprite) {
+        let gridPos = this.getGridPos(sprite.point.convert());
+        let gridVal = this.mapArray[gridPos.y][gridPos.x];
+        let tilePos = this.getTilePos(sprite.point);
+        let heading = this.movement.heading;
+        switch (gridVal) {
+            case 1: this.movement = {"amount": 50,
+                    "heading": heading == "E" ? "E" : "W"};
+                break;
+            case 2: this.movement = {"amount": 50,
+                    "heading": heading == "N" ? "N" : "S"};
+                break;
+            case 3: this.movement = {"amount": 50,
+                    "heading": heading == "S" ? "E" : "N"};
+                break;
+            case 4: this.movement = {"amount": 50,
+                    "heading": heading == "S" ? "W" : "N", };
+                break;
+            case 5: this.movement = {"amount": 50,
+                    "heading": heading == "N" ? "E" : "S", };
+                break;
+            case 6: this.movement = {"amount": 50,
+                    "heading": heading == "N" ? "W" : "S", };
+                break;
+        }
+        console.log(this.movement);
+    };
+    this.update = function() {
+        if (!this.movement.amount)
+            this.tileMovement(this.sprite);
+        this.sprite.move(this.directions[this.movement.heading]);
+        --this.movement.amount
     };
     this.draw = function() {
         this.context.save();
@@ -129,31 +169,9 @@ function GameObj(canvas) {
         this.sprite.draw();
         this.context.restore();
     };
-    this.getGridPos = function(Point) {
-        return Point.fdiv(this.isometricSize);
-    };
-    this.getTilePos = function(Point) {
-        return Point.mod(this.isometricSize);
-    };
-    this.tileMovement = function(sprite) {
-        // console.log("gridPos", sprite.point.convert().div(50));
-        let gridPos = this.getGridPos(sprite.point.convert());
-        // console.log("final", gridPos);
-        let gridVal = this.mapArray[gridPos.y][gridPos.x];
-        console.log("gridVal", gridVal);
-        switch (gridVal) {
-            case 0: sprite.move(this.directions["NE"]); break;
-            case 1: sprite.move(this.directions["E"]); break;
-            case 2: sprite.move(this.directions["N"]); break;
-            case 3: sprite.move(this.directions["SE"]); break;
-            case 4: sprite.move(this.directions["NE"]); break;
-            case 5: sprite.move(this.directions["NE"]); break;
-            case 6: sprite.move(this.directions["SE"]); break;
-        }
-    };
     this.loop = function() {
+        this.update();
         this.draw();
-        this.tileMovement(this.sprite);
     };
     return this;
 }
