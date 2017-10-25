@@ -82,7 +82,6 @@ function CreepObj(context, sprite, point, heading) {
     this.sprite = sprite;
     this.point = point;
     this.heading = heading;
-    this.amount = 0;
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
@@ -92,6 +91,38 @@ function CreepObj(context, sprite, point, heading) {
         this.context.drawImage(this.sprite.img,
             0, 0, this.sprite.width, this.sprite.height,  // Source
             drawPos.x, drawPos.y, this.sprite.width, this.sprite.height);  // Destination
+    };
+}
+
+function WaveObj(context, sprite, creepAmount, startingPoint, directions, initialHeading) {
+    this.context = context;
+    this.sprite = sprite;
+    this.creepAmount = creepAmount;
+    this.point = startingPoint;
+    this.directions = directions;
+    this.initialHeading = initialHeading;
+    this.creeps = [];
+    this.cycle = 0
+    this.createCreep = function() {
+        this.creeps.push(new CreepObj(
+            this.context, this.sprite, this.point, this.initialHeading));
+        --this.creepAmount;
+    };
+    this.update = function() {
+        if (this.cycle === 0 && this.creepAmount > 0)
+            this.createCreep();
+        for (creep of this.creeps) {
+            if (this.cycle === 0) {
+                // this.tileMovement(creep);
+                this.cycle = 50;
+            }
+            creep.move(this.directions[creep.heading]);
+        }
+        --this.cycle;
+    };
+    this.draw = function() {
+        for (creep of this.creeps)
+            creep.draw();
     };
 }
 
@@ -122,19 +153,20 @@ function GameObj(canvas) {
     this.sprites = {
         "slime": new SpriteObj("sprites/Slime compact.png", 4, 4),
     };
-    this.creeps = [];
+    this.waves = [];
+    this.gridToIso = function(gridPoint) {
+        let iPoint = gridPoint.multi(this.isometricSize).convert();
+        return iPoint.add(0, this.map.tiles[0].height / 2);
+    };
     this.init = function() {
-        let Spacing = this.directions["E"].multi(this.isometricSize);
-        let Point = (new PointObj(0, 6)).multi(this.isometricSize);
-        let iPoint = Point.convert().add(0, this.map.tiles[0].height / 2);
-        this.creeps.push(
-            new CreepObj(this.context, this.sprites["slime"], iPoint, "E"));
-        iPoint = iPoint.add(Spacing.x, Spacing.y);
-        this.creeps.push(
-            new CreepObj(this.context, this.sprites["slime"], iPoint, "E"));
-        iPoint = iPoint.add(Spacing.x, Spacing.y);
-        this.creeps.push(
-            new CreepObj(this.context, this.sprites["slime"], iPoint, "E"));
+        this.waves.push(new WaveObj(
+            this.context,
+            this.sprites["slime"],
+            6,
+            this.gridToIso(new PointObj(0, 6)),
+            this.directions,
+            "E"
+        ));
     };
     this.getGridPos = function(Point) {
         return Point.fdiv(this.isometricSize);
@@ -157,22 +189,16 @@ function GameObj(canvas) {
         }
     };
     this.update = function() {
-        for (creep of this.creeps) {
-            if (creep.amount === 0) {
-                this.tileMovement(creep);
-            }
-            console.log(creep.heading);
-            creep.move(this.directions[creep.heading]);
-            --creep.amount;
-        }
+        for (wave of this.waves)
+            wave.update();
     };
     this.draw = function() {
         this.context.save();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
-        for (creep of this.creeps)
-            creep.draw();
+        for (wave of this.waves)
+            wave.draw();
         this.context.restore();
     };
     this.loop = function() {
