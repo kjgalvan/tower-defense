@@ -70,24 +70,29 @@ function MapObj(context, mapArray) {
     return this;
 }
 
-function SpriteObj(context, imgSheet, rows, cols, point) {
-    this.context = context;
+function SpriteObj(imgSheet, rows, cols) {
     this.img = loadImage(imgSheet);
     this.width = this.img.width / cols;
     this.height = this.img.height / rows;
+    return this;
+}
+
+function CreepObj(context, sprite, point, heading) {
+    this.context = context;
+    this.sprite = sprite;
     this.point = point;
-    this.centerFeet = new PointObj(-this.width / 2, -this.height);
-    this.draw = function() {
-        // image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
-        let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
-        this.context.drawImage(this.img,
-            0, 0, this.width, this.height,  // Source
-            drawPos.x, drawPos.y, this.width, this.height);  // Destination
-    };
+    this.heading = heading;
+    this.amount = 0;
+    this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
-    return this;
+    this.draw = function() {
+        let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
+        this.context.drawImage(this.sprite.img,
+            0, 0, this.sprite.width, this.sprite.height,  // Source
+            drawPos.x, drawPos.y, this.sprite.width, this.sprite.height);  // Destination
+    };
 }
 
 function GameObj(canvas) {
@@ -114,13 +119,22 @@ function GameObj(canvas) {
     ];
     this.map = new MapObj(this.context, this.mapArray);
     this.isometricSize = this.map.isometricSize;
-    this.movement = {"amount": 0, "heading": "E"};
-    this.sprite = undefined;
+    this.sprites = {
+        "slime": new SpriteObj("sprites/Slime compact.png", 4, 4),
+    };
+    this.creeps = [];
     this.init = function() {
+        let Spacing = this.directions["E"].multi(this.isometricSize);
         let Point = (new PointObj(0, 6)).multi(this.isometricSize);
         let iPoint = Point.convert().add(0, this.map.tiles[0].height / 2);
-        this.sprite = new SpriteObj(
-            this.context, "sprites/Slime compact.png", 4, 4, iPoint);
+        this.creeps.push(
+            new CreepObj(this.context, this.sprites["slime"], iPoint, "E"));
+        iPoint = iPoint.add(Spacing.x, Spacing.y);
+        this.creeps.push(
+            new CreepObj(this.context, this.sprites["slime"], iPoint, "E"));
+        iPoint = iPoint.add(Spacing.x, Spacing.y);
+        this.creeps.push(
+            new CreepObj(this.context, this.sprites["slime"], iPoint, "E"));
     };
     this.getGridPos = function(Point) {
         return Point.fdiv(this.isometricSize);
@@ -128,45 +142,37 @@ function GameObj(canvas) {
     this.getTilePos = function(Point) {
         return Point.mod(this.isometricSize);
     };
-    this.tileMovement = function(sprite) {
-        let gridPos = this.getGridPos(sprite.point.convert());
+    this.tileMovement = function(creep) {
+        let gridPos = this.getGridPos(creep.point.convert());
         let gridVal = this.mapArray[gridPos.y][gridPos.x];
-        let tilePos = this.getTilePos(sprite.point);
-        let heading = this.movement.heading;
+        let tilePos = this.getTilePos(creep.point);
+        creep.amount = 50;
         switch (gridVal) {
-            case 1: this.movement = {"amount": 50,
-                    "heading": heading == "E" ? "E" : "W"};
-                break;
-            case 2: this.movement = {"amount": 50,
-                    "heading": heading == "N" ? "N" : "S"};
-                break;
-            case 3: this.movement = {"amount": 50,
-                    "heading": heading == "S" ? "E" : "N"};
-                break;
-            case 4: this.movement = {"amount": 50,
-                    "heading": heading == "S" ? "W" : "N", };
-                break;
-            case 5: this.movement = {"amount": 50,
-                    "heading": heading == "N" ? "E" : "S", };
-                break;
-            case 6: this.movement = {"amount": 50,
-                    "heading": heading == "N" ? "W" : "S", };
-                break;
+            case 1: creep.heading = creep.heading == "E" ? "E" : "W"; break;
+            case 2: creep.heading = creep.heading == "N" ? "N" : "S"; break;
+            case 3: creep.heading = creep.heading == "S" ? "E" : "N"; break;
+            case 4: creep.heading = creep.heading == "S" ? "W" : "N"; break;
+            case 5: creep.heading = creep.heading == "N" ? "E" : "S"; break;
+            case 6: creep.heading = creep.heading == "N" ? "W" : "S"; break;
         }
-        console.log(this.movement);
     };
     this.update = function() {
-        if (!this.movement.amount)
-            this.tileMovement(this.sprite);
-        this.sprite.move(this.directions[this.movement.heading]);
-        --this.movement.amount
+        for (creep of this.creeps) {
+            if (creep.amount === 0) {
+                this.tileMovement(creep);
+            }
+            console.log(creep.heading);
+            creep.move(this.directions[creep.heading]);
+            --creep.amount;
+        }
     };
     this.draw = function() {
         this.context.save();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
-        this.sprite.draw();
+        for (creep of this.creeps)
+            creep.draw();
         this.context.restore();
     };
     this.loop = function() {
