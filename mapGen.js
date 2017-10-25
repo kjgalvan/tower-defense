@@ -66,8 +66,34 @@ function MapObj(context, mapArray) {
                     iPoint.x - this.isometricSize, iPoint.y);
             }
         }
-    }
+    };
     return this;
+}
+
+function MapNavigationObj(mapArray, directions, isometricSize) {
+    this.mapArray = mapArray;
+    this.directions = directions;
+    this.isometricSize = isometricSize;
+    this.getGridPos = function(Point) {
+        return Point.fdiv(this.isometricSize);
+    };
+    this.getTilePos = function(Point) {
+        return Point.mod(this.isometricSize);
+    };
+    this.tileMovement = function(creep) {
+        console.log(creep);
+        let gridPos = this.getGridPos(creep.point.convert());
+        let gridVal = this.mapArray[gridPos.y][gridPos.x];
+        let tilePos = this.getTilePos(creep.point);
+        switch (gridVal) {
+            case 1: creep.heading = creep.heading == "E" ? "E" : "W"; break;
+            case 2: creep.heading = creep.heading == "N" ? "N" : "S"; break;
+            case 3: creep.heading = creep.heading == "S" ? "E" : "N"; break;
+            case 4: creep.heading = creep.heading == "S" ? "W" : "N"; break;
+            case 5: creep.heading = creep.heading == "N" ? "E" : "S"; break;
+            case 6: creep.heading = creep.heading == "N" ? "W" : "S"; break;
+        }
+    };
 }
 
 function SpriteObj(imgSheet, rows, cols) {
@@ -94,13 +120,13 @@ function CreepObj(context, sprite, point, heading) {
     };
 }
 
-function WaveObj(context, sprite, creepAmount, startingPoint, directions, initialHeading) {
+function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading, mapNav) {
     this.context = context;
     this.sprite = sprite;
     this.creepAmount = creepAmount;
     this.point = startingPoint;
-    this.directions = directions;
     this.initialHeading = initialHeading;
+    this.mapNav = mapNav;
     this.creeps = [];
     this.cycle = 0
     this.createCreep = function() {
@@ -113,11 +139,12 @@ function WaveObj(context, sprite, creepAmount, startingPoint, directions, initia
             this.createCreep();
         for (creep of this.creeps) {
             if (this.cycle === 0) {
-                // this.tileMovement(creep);
-                this.cycle = 50;
+                this.mapNav.tileMovement(creep);
             }
-            creep.move(this.directions[creep.heading]);
+            creep.move(this.mapNav.directions[creep.heading]);
         }
+        if (this.cycle === 0) 
+            this.cycle = 50;
         --this.cycle;
     };
     this.draw = function() {
@@ -150,6 +177,7 @@ function GameObj(canvas) {
     ];
     this.map = new MapObj(this.context, this.mapArray);
     this.isometricSize = this.map.isometricSize;
+    this.mapNav = new MapNavigationObj(this.mapArray, this.directions, this.isometricSize);
     this.sprites = {
         "slime": new SpriteObj("sprites/Slime compact.png", 4, 4),
     };
@@ -164,29 +192,9 @@ function GameObj(canvas) {
             this.sprites["slime"],
             6,
             this.gridToIso(new PointObj(0, 6)),
-            this.directions,
-            "E"
+            "E",
+            this.mapNav
         ));
-    };
-    this.getGridPos = function(Point) {
-        return Point.fdiv(this.isometricSize);
-    };
-    this.getTilePos = function(Point) {
-        return Point.mod(this.isometricSize);
-    };
-    this.tileMovement = function(creep) {
-        let gridPos = this.getGridPos(creep.point.convert());
-        let gridVal = this.mapArray[gridPos.y][gridPos.x];
-        let tilePos = this.getTilePos(creep.point);
-        creep.amount = 50;
-        switch (gridVal) {
-            case 1: creep.heading = creep.heading == "E" ? "E" : "W"; break;
-            case 2: creep.heading = creep.heading == "N" ? "N" : "S"; break;
-            case 3: creep.heading = creep.heading == "S" ? "E" : "N"; break;
-            case 4: creep.heading = creep.heading == "S" ? "W" : "N"; break;
-            case 5: creep.heading = creep.heading == "N" ? "E" : "S"; break;
-            case 6: creep.heading = creep.heading == "N" ? "W" : "S"; break;
-        }
     };
     this.update = function() {
         for (wave of this.waves)
