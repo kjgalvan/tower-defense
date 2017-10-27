@@ -144,6 +144,22 @@ function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading, ma
     };
 }
 
+function TowerObj(context, sprite, point) {
+    this.context = context;
+    this.sprite = sprite;
+    this.point = point;
+    this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
+    this.draw = function() {
+        let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
+        this.context.drawImage(this.sprite.img,
+            0, 0, this.sprite.width, this.sprite.height,  // Source
+            drawPos.x, drawPos.y, this.sprite.width, this.sprite.height);  // Destination
+    };
+    this.upgrade = function() {
+        this.sprite.setRow(1);
+    };
+}
+
 function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
@@ -171,8 +187,9 @@ function GameObj(canvas) {
     this.mapNav = new MapNavigationObj(this.mapArray, this.directions, this.isometricSize);
     this.sprites = {
         "slime": new SpriteObj("sprites/Slime compact.png", 4, 4),
+        "cannon": new SpriteObj("sprites/CannonMap.png", 3, 8),
     };
-    this.waves = [];
+    this.waves = [], this.towers = [];
     this.gridToIso = function(gridPoint) {
         let iPoint = gridPoint.multi(this.isometricSize).convert();
         return iPoint.add(0, this.map.tiles[0].height / 2);
@@ -186,6 +203,8 @@ function GameObj(canvas) {
             "E",
             this.mapNav
         ));
+        this.towers.push(new TowerObj(this.context, this.sprites["cannon"],
+            this.gridToIso(new PointObj(0, 0))));
     };
     this.update = function() {
         for (wave of this.waves)
@@ -198,6 +217,8 @@ function GameObj(canvas) {
         this.map.draw();
         for (wave of this.waves)
             wave.draw();
+        for (tower of this.towers)
+            tower.draw();
         this.context.restore();
     };
     this.loop = function() {
