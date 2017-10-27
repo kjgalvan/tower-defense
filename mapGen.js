@@ -87,15 +87,24 @@ function MapNavigationObj(mapArray, directions, isometricSize) {
     };
 }
 
-function SpriteObj(imgSheet, rows, cols) {
+function SpriteObj(context, imgSheet, imgRows, imgCols) {
+    this.context = context;
     this.img = loadImage(imgSheet);
-    this.width = this.img.width / cols;
-    this.height = this.img.height / rows;
+    this.width = this.img.width / imgCols;
+    this.height = this.img.height / imgRows;
+    this.row = 0, this.col = 0;
+    this.setRow = function(Row) {
+        this.row = Row * this.height;
+    };
+    this.draw = function(x, y) {
+        this.context.drawImage(this.img,
+            this.col, this.row, this.width, this.height,  // Source
+            x, y, this.width, this.height);  // Destination
+    };
     return this;
 }
 
-function CreepObj(context, sprite, point, heading) {
-    this.context = context;
+function CreepObj(sprite, point, heading) {
     this.sprite = sprite;
     this.point = point;
     this.heading = heading;
@@ -105,14 +114,11 @@ function CreepObj(context, sprite, point, heading) {
     };
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
-        this.context.drawImage(this.sprite.img,
-            0, 0, this.sprite.width, this.sprite.height,  // Source
-            drawPos.x, drawPos.y, this.sprite.width, this.sprite.height);  // Destination
+        this.sprite.draw(drawPos.x, drawPos.y);
     };
 }
 
-function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading, mapNav) {
-    this.context = context;
+function WaveObj(sprite, creepAmount, startingPoint, initialHeading, mapNav) {
     this.sprite = sprite;
     this.creepAmount = creepAmount;
     this.point = startingPoint;
@@ -122,7 +128,7 @@ function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading, ma
     this.cycle = 0
     this.createCreep = function() {
         this.creeps.push(new CreepObj(
-            this.context, this.sprite, this.point, this.initialHeading));
+            this.sprite, this.point, this.initialHeading));
         --this.creepAmount;
     };
     this.update = function() {
@@ -170,7 +176,7 @@ function GameObj(canvas) {
     this.isometricSize = this.map.isometricSize;
     this.mapNav = new MapNavigationObj(this.mapArray, this.directions, this.isometricSize);
     this.sprites = {
-        "slime": new SpriteObj("sprites/Slime compact.png", 4, 4),
+        "slime": new SpriteObj(this.context, "sprites/Slime compact.png", 4, 4),
     };
     this.waves = [];
     this.gridToIso = function(gridPoint) {
@@ -179,7 +185,6 @@ function GameObj(canvas) {
     };
     this.init = function() {
         this.waves.push(new WaveObj(
-            this.context,
             this.sprites["slime"],
             6,
             this.gridToIso(new PointObj(0, 6)),
