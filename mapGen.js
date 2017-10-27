@@ -35,10 +35,6 @@ function PointObj(x, y, type="Cartesian") {
         return new PointObj(
             Math.floor( this.x / z), Math.floor(this.y / y), this.type);
     };
-    this.mod = function(z, y=undefined) {
-        y = (y === undefined ? z : y);
-        return new PointObj(this.x % z, this.y % y, this.type);
-    };
     return this;
 }
 
@@ -77,14 +73,9 @@ function MapNavigationObj(mapArray, directions, isometricSize) {
     this.getGridPos = function(Point) {
         return Point.fdiv(this.isometricSize);
     };
-    this.getTilePos = function(Point) {
-        return Point.mod(this.isometricSize);
-    };
     this.tileMovement = function(creep) {
-        console.log(creep);
         let gridPos = this.getGridPos(creep.point.convert());
         let gridVal = this.mapArray[gridPos.y][gridPos.x];
-        let tilePos = this.getTilePos(creep.point);
         switch (gridVal) {
             case 1: creep.heading = creep.heading == "E" ? "E" : "W"; break;
             case 2: creep.heading = creep.heading == "N" ? "N" : "S"; break;
