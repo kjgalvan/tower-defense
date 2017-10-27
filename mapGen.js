@@ -95,6 +95,10 @@ function SpriteObj(context, imgSheet, imgRows, imgCols) {
     this.row = 0, this.col = 0;
     this.setRow = function(Row) {
         this.row = Row * this.height;
+        if (this.row > this.img.height) throw "Out of sprite sheet bounds";
+    };
+    this.nextCol = function() {
+        this.col = (this.col + this.width) % this.img.width;
     };
     this.draw = function(x, y) {
         this.context.drawImage(this.img,
@@ -115,6 +119,9 @@ function CreepObj(sprite, point, heading) {
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
         this.sprite.draw(drawPos.x, drawPos.y);
+    };
+    this.nextCol = function() {
+        this.sprite.nextCol();
     };
 }
 
@@ -140,8 +147,10 @@ function WaveObj(sprite, creepAmount, startingPoint, initialHeading, mapNav) {
             }
             creep.move(this.mapNav.directions[creep.heading]);
         }
+        if (this.cycle % 5 === 0)
+            creep.nextCol();
         if (this.cycle === 0) 
-            this.cycle = 50;
+            this.cycle = this.mapNav.isometricSize;
         --this.cycle;
     };
     this.draw = function() {
