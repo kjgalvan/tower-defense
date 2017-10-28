@@ -76,14 +76,17 @@ function MapNavigationObj(mapArray, directions, isometricSize) {
     this.tileMovement = function(creep) {
         let gridPos = this.getGridPos(creep.point.convert());
         let gridVal = this.mapArray[gridPos.y][gridPos.x];
+        let heading;
         switch (gridVal) {
-            case 1: creep.heading = creep.heading == "E" ? "E" : "W"; break;
-            case 2: creep.heading = creep.heading == "N" ? "N" : "S"; break;
-            case 3: creep.heading = creep.heading == "S" ? "E" : "N"; break;
-            case 4: creep.heading = creep.heading == "S" ? "W" : "N"; break;
-            case 5: creep.heading = creep.heading == "N" ? "E" : "S"; break;
-            case 6: creep.heading = creep.heading == "N" ? "W" : "S"; break;
+            case 1: heading = creep.heading == "E" ? "E" : "W"; break;
+            case 2: heading = creep.heading == "N" ? "N" : "S"; break;
+            case 3: heading = creep.heading == "S" ? "E" : "N"; break;
+            case 4: heading = creep.heading == "S" ? "W" : "N"; break;
+            case 5: heading = creep.heading == "N" ? "E" : "S"; break;
+            case 6: heading = creep.heading == "N" ? "W" : "S"; break;
+            default: heading = "E";
         }
+        return heading;
     };
 }
 
@@ -102,6 +105,7 @@ function SpriteObj(context, imgSheet, imgRows, imgCols) {
     };
     this.draw = function(col, row, x, y) {
         col = (col * this.width) % this.img.width;
+        row = row * this.height;
         this.context.drawImage(this.img,
             col, row, this.width, this.height,  // Source
             x, y, this.width, this.height);  // Destination
@@ -115,6 +119,15 @@ function CreepObj(sprite, point, heading) {
     this.heading = heading;
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.row = 0, this.col = 0;
+    this.setHeading = function(heading) {
+        this.heading = heading;
+        switch (heading) {
+            case "N": this.row = 0; break;
+            case "S": this.row = 1; break;
+            case "E": this.row = 2; break;
+            case "W": this.row = 3; break;
+        }
+    };
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
@@ -145,7 +158,7 @@ function WaveObj(sprite, creepAmount, startingPoint, initialHeading, mapNav) {
             this.createCreep();
         for (creep of this.creeps) {
             if (this.cycle === 0) {
-                this.mapNav.tileMovement(creep);
+                creep.setHeading(this.mapNav.tileMovement(creep));
             }
             if (this.cycle % 5 === 0)
                 creep.nextCol();
@@ -187,7 +200,7 @@ function GameObj(canvas) {
     this.isometricSize = this.map.isometricSize;
     this.mapNav = new MapNavigationObj(this.mapArray, this.directions, this.isometricSize);
     this.sprites = {
-        "slime": new SpriteObj(this.context, "sprites/Slime.png", 4, 4),
+        "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
     };
     this.waves = [];
     this.gridToIso = function(gridPoint) {
