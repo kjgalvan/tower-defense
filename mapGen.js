@@ -100,9 +100,10 @@ function SpriteObj(context, imgSheet, imgRows, imgCols) {
     this.nextCol = function() {
         this.col = (this.col + this.width) % this.img.width;
     };
-    this.draw = function(x, y) {
+    this.draw = function(col, row, x, y) {
+        col = (col * this.width) % this.img.width;
         this.context.drawImage(this.img,
-            this.col, this.row, this.width, this.height,  // Source
+            col, row, this.width, this.height,  // Source
             x, y, this.width, this.height);  // Destination
     };
     return this;
@@ -113,15 +114,16 @@ function CreepObj(sprite, point, heading) {
     this.point = point;
     this.heading = heading;
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
+    this.row = 0, this.col = 0;
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
-        this.sprite.draw(drawPos.x, drawPos.y);
+        this.sprite.draw(this.col, this.row, drawPos.x, drawPos.y);
     };
     this.nextCol = function() {
-        this.sprite.nextCol();
+        ++this.col;
     };
 }
 
@@ -145,10 +147,10 @@ function WaveObj(sprite, creepAmount, startingPoint, initialHeading, mapNav) {
             if (this.cycle === 0) {
                 this.mapNav.tileMovement(creep);
             }
+            if (this.cycle % 5 === 0)
+                creep.nextCol();
             creep.move(this.mapNav.directions[creep.heading]);
         }
-        if (this.cycle % 5 === 0)
-            creep.nextCol();
         if (this.cycle === 0) 
             this.cycle = this.mapNav.isometricSize;
         --this.cycle;
@@ -185,7 +187,7 @@ function GameObj(canvas) {
     this.isometricSize = this.map.isometricSize;
     this.mapNav = new MapNavigationObj(this.mapArray, this.directions, this.isometricSize);
     this.sprites = {
-        "slime": new SpriteObj(this.context, "sprites/Slime compact.png", 4, 4),
+        "slime": new SpriteObj(this.context, "sprites/Slime.png", 4, 4),
     };
     this.waves = [];
     this.gridToIso = function(gridPoint) {
