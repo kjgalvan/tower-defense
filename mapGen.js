@@ -38,53 +38,50 @@ function PointObj(x, y, type="Cartesian") {
     return this;
 }
 
+function TileObj(imgPath, getHeadingFunc) {
+    this.img = loadImage(imgPath);
+    this.getHeading = getHeadingFunc;
+}
+
 function MapObj(context, mapArray) {
     this.context = context;
     this.mapArray = mapArray;
-    let basePath = "roadTiles_v2/png/";
+    let Path = "roadTiles_v2/png/";
     this.tiles = [
-        loadImage(basePath + "grass.png"),
-        loadImage(basePath + "roadNorth.png"),
-        loadImage(basePath + "roadEast.png"),
-        loadImage(basePath + "roadCornerES.png"),
-        loadImage(basePath + "roadCornerNE.png"),
-        loadImage(basePath + "roadCornerWS.png"),
-        loadImage(basePath + "roadCornerNW.png"),
+        new TileObj(Path + "grass.png", undefined),
+        new TileObj(Path + "roadNorth.png",
+                    (H) => { return H == "E" ? "E" : "W" }),
+        new TileObj(Path + "roadEast.png",
+                    (H) => { return H == "N" ? "N" : "S"; }),
+        new TileObj(Path + "roadCornerES.png",
+                    (H) => { return H == "S" ? "E" : "N"; }),
+        new TileObj(Path + "roadCornerNE.png",
+                    (H) => { return H == "S" ? "W" : "N"; }),
+        new TileObj(Path + "roadCornerWS.png",
+                    (H) => { return H == "N" ? "W" : "S"; }),
+        new TileObj(Path + "roadCornerNW.png",
+                    (H) => { return H == "N" ? "E" : "S"; }),
     ];
-    this.isometricSize = this.tiles[0].width / 2;
+    this.directions = {
+        "N": (new PointObj(0, -1)).convert(),
+        "S": (new PointObj(0, 1)).convert(),
+        "E": (new PointObj(1, 0)).convert(),
+        "W": (new PointObj(-1, 0)).convert(),
+    };
+    this.isometricSize = this.tiles[0].img.width / 2;
     this.draw = function() {
         let rowAmount = mapArray.length, colAmount = mapArray[0].length;
-        let iPoint;
+        let iPoint, gridVal;
         for (x = 0; x < rowAmount; ++x) {
             for (y = 0; y < colAmount; ++y) {
                 iPoint = (new PointObj(y, x)).convert().multi(this.isometricSize);
-                this.context.drawImage(this.tiles[this.mapArray[x][y]],
+                gridVal = this.mapArray[x][y];
+                this.context.drawImage(this.tiles[gridVal].img,
                     iPoint.x - this.isometricSize, iPoint.y);
             }
         }
     };
     return this;
-}
-
-function MapNavigationObj(mapArray, directions, isometricSize) {
-    this.mapArray = mapArray;
-    this.directions = directions;
-    this.isometricSize = isometricSize;
-    this.getGridPos = function(Point) {
-        return Point.fdiv(this.isometricSize);
-    };
-    this.tileMovement = function(creep) {
-        let gridPos = this.getGridPos(creep.point.convert());
-        let gridVal = this.mapArray[gridPos.y][gridPos.x];
-        switch (gridVal) {
-            case 1: creep.heading = creep.heading == "E" ? "E" : "W"; break;
-            case 2: creep.heading = creep.heading == "N" ? "N" : "S"; break;
-            case 3: creep.heading = creep.heading == "S" ? "E" : "N"; break;
-            case 4: creep.heading = creep.heading == "S" ? "W" : "N"; break;
-            case 5: creep.heading = creep.heading == "N" ? "E" : "S"; break;
-            case 6: creep.heading = creep.heading == "N" ? "W" : "S"; break;
-        }
-    };
 }
 
 function SpriteObj(imgSheet, rows, cols) {
@@ -111,13 +108,12 @@ function CreepObj(context, sprite, point, heading) {
     };
 }
 
-function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading, mapNav) {
+function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading) {
     this.context = context;
     this.sprite = sprite;
     this.creepAmount = creepAmount;
     this.point = startingPoint;
     this.initialHeading = initialHeading;
-    this.mapNav = mapNav;
     this.creeps = [];
     this.cycle = 0
     this.createCreep = function() {
@@ -147,16 +143,6 @@ function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading, ma
 function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
-    this.directions = {
-        "N": (new PointObj(0, -1)).convert(),
-        "S": (new PointObj(0, 1)).convert(),
-        "E": (new PointObj(1, 0)).convert(),
-        "W": (new PointObj(-1, 0)).convert(),
-        "NE": (new PointObj(1, -1)).convert(),
-        "NW": (new PointObj(-1, -1)).convert(),
-        "SE": (new PointObj(1, 1)).convert(),
-        "SW": (new PointObj(-1, 1)).convert(),
-    }
     this.mapArray = [
         [0, 5, 1, 1, 1, 6, 0],
         [0, 2, 0, 0, 0, 3, 6],
@@ -168,14 +154,13 @@ function GameObj(canvas) {
     ];
     this.map = new MapObj(this.context, this.mapArray);
     this.isometricSize = this.map.isometricSize;
-    this.mapNav = new MapNavigationObj(this.mapArray, this.directions, this.isometricSize);
     this.sprites = {
         "slime": new SpriteObj("sprites/Slime compact.png", 4, 4),
     };
     this.waves = [];
     this.gridToIso = function(gridPoint) {
-        let iPoint = gridPoint.multi(this.isometricSize).convert();
-        return iPoint.add(0, this.map.tiles[0].height / 2);
+        let isoPoint = gridPoint.multi(this.isometricSize).convert();
+        return isoPoint.add(0, this.map.tiles[0].height / 2);
     };
     this.init = function() {
         this.waves.push(new WaveObj(
@@ -184,12 +169,12 @@ function GameObj(canvas) {
             6,
             this.gridToIso(new PointObj(0, 6)),
             "E",
-            this.mapNav
+            this.map
         ));
     };
     this.update = function() {
-        for (wave of this.waves)
-            wave.update();
+        // for (wave of this.waves)
+            // wave.update();
     };
     this.draw = function() {
         this.context.save();
