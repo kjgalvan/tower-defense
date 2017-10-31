@@ -91,32 +91,57 @@ function MapObj(context, mapArray) {
     return this;
 }
 
-function SpriteObj(imgSheet, rows, cols) {
+function SpriteObj(context, imgSheet, imgRows, imgCols) {
+    this.context = context;
     this.img = loadImage(imgSheet);
-    this.width = this.img.width / cols;
-    this.height = this.img.height / rows;
+    this.width = this.img.width / imgCols;
+    this.height = this.img.height / imgRows;
+    this.row = 0, this.col = 0;
+    this.setRow = function(Row) {
+        this.row = Row * this.height;
+        if (this.row > this.img.height) throw "Out of sprite sheet bounds";
+    };
+    this.nextCol = function() {
+        this.col = (this.col + this.width) % this.img.width;
+    };
+    this.draw = function(col, row, x, y) {
+        col = (col * this.width) % this.img.width;
+        row = row * this.height;
+        this.context.drawImage(this.img,
+            col, row, this.width, this.height,  // Source
+            x, y, this.width, this.height);  // Destination
+    };
     return this;
 }
 
-function CreepObj(context, sprite, point, heading) {
-    this.context = context;
+function CreepObj(sprite, point, heading) {
     this.sprite = sprite;
     this.point = point;
     this.heading = heading;
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
+    this.row = 0, this.col = 0;
+    this.setHeading = function(heading) {
+        this.heading = heading;
+        switch (heading) {
+            case "N": this.row = 0; break;
+            case "S": this.row = 1; break;
+            case "E": this.row = 2; break;
+            case "W": this.row = 3; break;
+        }
+    };
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
-        this.context.drawImage(this.sprite.img,
-            0, 0, this.sprite.width, this.sprite.height,  // Source
-            drawPos.x, drawPos.y, this.sprite.width, this.sprite.height);  // Destination
+        this.sprite.draw(this.col, this.row, drawPos.x, drawPos.y);
+    };
+    this.nextCol = function() {
+        ++this.col;
     };
 }
 
-function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading) {
-    this.context = context;
+function WaveObj(sprite, creepAmount, startingPoint, initialHeading) {
     this.sprite = sprite;
     this.creepAmount = creepAmount;
     this.point = startingPoint;
@@ -125,7 +150,7 @@ function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading) {
     this.cycle = 0
     this.createCreep = function() {
         this.creeps.push(new CreepObj(
-            this.context, this.sprite, this.point, this.initialHeading));
+            this.sprite, this.point, this.initialHeading));
         --this.creepAmount;
     };
     this.update = function(getNewHeading, directions) {
@@ -133,8 +158,10 @@ function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading) {
             this.createCreep();
         for (creep of this.creeps) {
             if (this.cycle === 0) {
-                creep.heading = getNewHeading(creep);
+                creep.setHeading(getNewHeading(creep));
             }
+            if (this.cycle % 5 === 0)
+                creep.nextCol();
             creep.move(directions[creep.heading]);
         }
         if (this.cycle === 0) 
@@ -162,12 +189,12 @@ function GameObj(canvas) {
     this.map = new MapObj(this.context, this.mapArray);
     this.isometricSize = this.map.isometricSize;
     this.sprites = {
-        "slime": new SpriteObj("sprites/Slime compact.png", 4, 4),
+        "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
     };
     this.waves = [];
     this.gridToIso = function(gridPoint) {
-        let isoPoint = gridPoint.multi(this.isometricSize).convert();
-        return isoPoint.add(0, this.map.tiles[0].img.height / 2);
+        let iPoint = gridPoint.multi(this.isometricSize).convert();
+        return iPoint.add(0, this.map.tiles[0].img.height / 2);
     };
     this.getGridPos = function(Point) {
         return Point.fdiv(this.isometricSize);
@@ -178,12 +205,11 @@ function GameObj(canvas) {
     };
     this.init = function() {
         this.waves.push(new WaveObj(
-            this.context,
             this.sprites["slime"],
             6,
             this.gridToIso(new PointObj(0, 6)),
             "E",
-            this.map
+            this.mapNav
         ));
     };
     this.update = function() {
