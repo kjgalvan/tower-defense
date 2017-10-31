@@ -38,9 +38,9 @@ function PointObj(x, y, type="Cartesian") {
     return this;
 }
 
-function TileObj(imgPath, getHeadingFunc) {
+function TileObj(imgPath, getNewHeadingFunc) {
     this.img = loadImage(imgPath);
-    this.getHeading = getHeadingFunc;
+    this.getNewHeading = getNewHeadingFunc;
 }
 
 function MapObj(context, mapArray) {
@@ -58,9 +58,9 @@ function MapObj(context, mapArray) {
         new TileObj(Path + "roadCornerNE.png",
                     (H) => { return H == "S" ? "W" : "N"; }),
         new TileObj(Path + "roadCornerWS.png",
-                    (H) => { return H == "N" ? "W" : "S"; }),
-        new TileObj(Path + "roadCornerNW.png",
                     (H) => { return H == "N" ? "E" : "S"; }),
+        new TileObj(Path + "roadCornerNW.png",
+                    (H) => { return H == "N" ? "W" : "S"; }),
     ];
     this.directions = {
         "N": (new PointObj(0, -1)).convert(),
@@ -80,6 +80,13 @@ function MapObj(context, mapArray) {
                     iPoint.x - this.isometricSize, iPoint.y);
             }
         }
+    };
+    this.getGridPos = function(Point) {
+        return Point.fdiv(this.isometricSize);
+    };
+    this.getNewHeading = function(gridPos, heading) {
+        let gridVal = this.mapArray[gridPos.y][gridPos.x]
+        return this.tiles[gridVal].getNewHeading(heading);
     };
     return this;
 }
@@ -121,14 +128,14 @@ function WaveObj(context, sprite, creepAmount, startingPoint, initialHeading) {
             this.context, this.sprite, this.point, this.initialHeading));
         --this.creepAmount;
     };
-    this.update = function() {
+    this.update = function(getNewHeading, directions) {
         if (this.cycle === 0 && this.creepAmount > 0)
             this.createCreep();
         for (creep of this.creeps) {
             if (this.cycle === 0) {
-                this.mapNav.tileMovement(creep);
+                creep.heading = getNewHeading(creep);
             }
-            creep.move(this.mapNav.directions[creep.heading]);
+            creep.move(directions[creep.heading]);
         }
         if (this.cycle === 0) 
             this.cycle = 50;
@@ -160,7 +167,14 @@ function GameObj(canvas) {
     this.waves = [];
     this.gridToIso = function(gridPoint) {
         let isoPoint = gridPoint.multi(this.isometricSize).convert();
-        return isoPoint.add(0, this.map.tiles[0].height / 2);
+        return isoPoint.add(0, this.map.tiles[0].img.height / 2);
+    };
+    this.getGridPos = function(Point) {
+        return Point.fdiv(this.isometricSize);
+    };
+    this.getNewCreepHeading = function(creep) {
+        let gridPos = this.getGridPos(creep.point.convert());
+        return this.map.getNewHeading(gridPos, creep.heading);
     };
     this.init = function() {
         this.waves.push(new WaveObj(
@@ -173,8 +187,8 @@ function GameObj(canvas) {
         ));
     };
     this.update = function() {
-        // for (wave of this.waves)
-            // wave.update();
+        for (wave of this.waves)
+            wave.update(this.getNewCreepHeading.bind(this), this.map.directions);
     };
     this.draw = function() {
         this.context.save();
