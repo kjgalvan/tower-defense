@@ -139,32 +139,27 @@ function CreepObj(sprite, point, heading) {
     };
 }
 
-function WaveObj(sprite, creepAmount, startingPoint, initialHeading) {
+function WaveObj(sprite, creationAmount, startingPoint, initialHeading) {
     this.sprite = sprite;
-    this.creepAmount = creepAmount;
+    this.creationAmount = creationAmount;
     this.point = startingPoint;
     this.initialHeading = initialHeading;
     this.creeps = [];
-    this.cycle = 0
     this.createCreep = function() {
         this.creeps.push(new CreepObj(
             this.sprite, this.point, this.initialHeading));
-        --this.creepAmount;
+        --this.creationAmount;
     };
-    this.update = function(getNewHeading, directions) {
-        if (this.cycle === 0 && this.creepAmount > 0)
+    this.update = function(frame, getNewHeading, directions) {
+        if (this.creationAmount > 0 && frame % 50 == 0 )
             this.createCreep();
         for (creep of this.creeps) {
-            if (this.cycle === 0) {
-                creep.setHeading(getNewHeading(creep));
-            }
-            if (this.cycle % 5 === 0)
+            if (frame % 5 == 0)
                 creep.nextCol();
+            if (frame % 50 == 0)
+                creep.setHeading(getNewHeading(creep));
             creep.move(directions[creep.heading]);
         }
-        if (this.cycle === 0) 
-            this.cycle = 50;
-        --this.cycle;
     };
     this.draw = function() {
         for (creep of this.creeps)
@@ -175,6 +170,7 @@ function WaveObj(sprite, creepAmount, startingPoint, initialHeading) {
 function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
+    this.frame = 0;
     this.sprites = {
         "roads": new SpriteObj(this.context,  "sprites/tileSheet.png", 2, 4),
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
@@ -205,7 +201,7 @@ function GameObj(canvas) {
     };
     this.update = function() {
         for (wave of this.waves)
-            wave.update(this.getNewCreepHeading.bind(this), this.map.directions);
+            wave.update(this.frame, this.getNewCreepHeading.bind(this), this.map.directions);
     };
     this.draw = function() {
         this.context.save();
@@ -219,6 +215,7 @@ function GameObj(canvas) {
     this.loop = function() {
         this.update();
         this.draw();
+        ++this.frame;
     };
     return this;
 }
