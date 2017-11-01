@@ -106,6 +106,7 @@ function MapObj(mapArray, tiles) {
         }
     };
     this.getGridPos = function(Point) {
+        Point = Point.type == "Cartesian" ? Point : Point.convert();
         return Point.fdiv(this.isometricSize);
     };
     this.getNewHeading = function(gridPos, heading) {
@@ -202,7 +203,7 @@ function GameObj(canvas) {
         return Point.fdiv(this.isometricSize);
     };
     this.getNewCreepHeading = function(creep) {
-        let gridPos = this.getGridPos(creep.point.convert());
+        let gridPos = this.map.getGridPos(creep.point);
         return this.map.getNewHeading(gridPos, creep.heading);
     };
     this.init = function() {
