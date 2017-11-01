@@ -199,21 +199,13 @@ function GameObj(canvas) {
         let iPoint = gridPoint.multi(this.isometricSize).convert();
         return iPoint.add(0, this.map.getHeight() / 2);
     };
-    this.getGridPos = function(Point) {
-        return Point.fdiv(this.isometricSize);
+    this.init = function() {
+        let Start = this.gridToIso(new PointObj(0, 6));
+        this.waves.push(new WaveObj(this.sprites["slime"], 6, Start, "E"));
     };
     this.getNewCreepHeading = function(creep) {
         let gridPos = this.map.getGridPos(creep.point);
         return this.map.getNewHeading(gridPos, creep.heading);
-    };
-    this.init = function() {
-        this.waves.push(new WaveObj(
-            this.sprites["slime"],
-            6,
-            this.gridToIso(new PointObj(0, 6)),
-            "E",
-            this.mapNav
-        ));
     };
     this.update = function() {
         for (wave of this.waves)
