@@ -38,37 +38,62 @@ function PointObj(x, y, type="Cartesian") {
     return this;
 }
 
-function TileObj(imgPath, getNewHeadingFunc) {
-    this.img = loadImage(imgPath);
-    this.getNewHeading = getNewHeadingFunc;
+function SpriteObj(context, imgSheet, imgRows, imgCols) {
+    this.context = context;
+    this.img = loadImage(imgSheet);
+    this.width = this.img.width / imgCols;
+    this.height = this.img.height / imgRows;
+    this.draw = function(col, row, x, y) {
+        col = (col * this.width) % this.img.width;
+        row = row * this.height;
+        this.context.drawImage(this.img,
+            col, row, this.width, this.height,  // Source
+            x, y, this.width, this.height);  // Destination
+    };
+    return this;
 }
 
-function MapObj(context, mapArray) {
-    this.context = context;
-    this.mapArray = mapArray;
-    let Path = "roadTiles_v2/png/";
+function TileSetObj(sprite) {
+    this.sprite = sprite;
     this.tiles = [
-        new TileObj(Path + "grass.png", undefined),
-        new TileObj(Path + "roadNorth.png",
-                    (H) => { return H == "E" ? "E" : "W" }),
-        new TileObj(Path + "roadEast.png",
-                    (H) => { return H == "N" ? "N" : "S"; }),
-        new TileObj(Path + "roadCornerES.png",
-                    (H) => { return H == "S" ? "E" : "N"; }),
-        new TileObj(Path + "roadCornerNE.png",
-                    (H) => { return H == "S" ? "W" : "N"; }),
-        new TileObj(Path + "roadCornerWS.png",
-                    (H) => { return H == "N" ? "E" : "S"; }),
-        new TileObj(Path + "roadCornerNW.png",
-                    (H) => { return H == "N" ? "W" : "S"; }),
+        {"x": 0, "y": 0, "getNewHeading": undefined},
+        {"x": 2, "y": 0, "getNewHeading": (H) => { return H == "N" ? "N" : "S"; }},
+        {"x": 3, "y": 0, "getNewHeading": (H) => { return H == "E" ? "E" : "W"; }},
+        {"x": 0, "y": 1, "getNewHeading": (H) => { return H == "S" ? "E" : "N"; }},
+        {"x": 1, "y": 1, "getNewHeading": (H) => { return H == "S" ? "W" : "N"; }},
+        {"x": 2, "y": 1, "getNewHeading": (H) => { return H == "N" ? "E" : "S"; }},
+        {"x": 3, "y": 1, "getNewHeading": (H) => { return H == "N" ? "W" : "S"; }},
+        {"x": 1, "y": 0, "getNewHeading": undefined},
     ];
+    this.getWidth = function() {
+        return this.sprite.width;
+    };
+    this.getHeight = function() {
+        return this.sprite.height;
+    };
+    this.draw = function(x, y, tileVal) {
+        let tile = this.tiles[tileVal];
+        this.sprite.draw(tile.x, tile.y, x, y);
+    };
+    this.movement = function(tileVal, heading) {
+        return this.tiles[tileVal].getNewHeading(heading);
+    };
+    return this;
+}
+
+function MapObj(mapArray, tiles) {
+    this.mapArray = mapArray;
+    this.tiles = tiles;
     this.directions = {
         "N": (new PointObj(0, -1)).convert(),
         "S": (new PointObj(0, 1)).convert(),
         "E": (new PointObj(1, 0)).convert(),
         "W": (new PointObj(-1, 0)).convert(),
     };
-    this.isometricSize = this.tiles[0].img.width / 2;
+    this.isometricSize = this.tiles.getWidth() / 2;
+    this.getHeight = function() {
+        return this.tiles.getHeight();
+    };
     this.draw = function() {
         let rowAmount = mapArray.length, colAmount = mapArray[0].length;
         let iPoint, gridVal;
@@ -76,8 +101,7 @@ function MapObj(context, mapArray) {
             for (y = 0; y < colAmount; ++y) {
                 iPoint = (new PointObj(y, x)).convert().multi(this.isometricSize);
                 gridVal = this.mapArray[x][y];
-                this.context.drawImage(this.tiles[gridVal].img,
-                    iPoint.x - this.isometricSize, iPoint.y);
+                this.tiles.draw(iPoint.x - this.isometricSize, iPoint.y, gridVal);
             }
         }
     };
@@ -86,30 +110,7 @@ function MapObj(context, mapArray) {
     };
     this.getNewHeading = function(gridPos, heading) {
         let gridVal = this.mapArray[gridPos.y][gridPos.x]
-        return this.tiles[gridVal].getNewHeading(heading);
-    };
-    return this;
-}
-
-function SpriteObj(context, imgSheet, imgRows, imgCols) {
-    this.context = context;
-    this.img = loadImage(imgSheet);
-    this.width = this.img.width / imgCols;
-    this.height = this.img.height / imgRows;
-    this.row = 0, this.col = 0;
-    this.setRow = function(Row) {
-        this.row = Row * this.height;
-        if (this.row > this.img.height) throw "Out of sprite sheet bounds";
-    };
-    this.nextCol = function() {
-        this.col = (this.col + this.width) % this.img.width;
-    };
-    this.draw = function(col, row, x, y) {
-        col = (col * this.width) % this.img.width;
-        row = row * this.height;
-        this.context.drawImage(this.img,
-            col, row, this.width, this.height,  // Source
-            x, y, this.width, this.height);  // Destination
+        return this.tiles.movement(gridVal, heading);
     };
     return this;
 }
@@ -177,24 +178,25 @@ function WaveObj(sprite, creepAmount, startingPoint, initialHeading) {
 function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
-    this.mapArray = [
-        [0, 5, 1, 1, 1, 6, 0],
-        [0, 2, 0, 0, 0, 3, 6],
-        [0, 2, 0, 0, 0, 0, 2],
-        [1, 4, 0, 5, 6, 0, 2],
-        [0, 0, 0, 2, 3, 1, 4],
-        [0, 0, 0, 2, 0, 0, 0],
-        [1, 1, 1, 4, 0, 0, 0]
-    ];
-    this.map = new MapObj(this.context, this.mapArray);
-    this.isometricSize = this.map.isometricSize;
     this.sprites = {
+        "roads": new SpriteObj(this.context,  "sprites/tileSheet.png", 2, 4),
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
     };
+    this.mapArray = [
+        [0, 5, 2, 2, 2, 6, 0],
+        [0, 1, 0, 0, 0, 3, 6],
+        [0, 1, 0, 0, 0, 0, 1],
+        [2, 4, 0, 5, 6, 0, 1],
+        [0, 0, 0, 1, 3, 2, 4],
+        [0, 0, 0, 1, 0, 0, 0],
+        [2, 2, 2, 4, 0, 0, 0]
+    ];
+    this.map = new MapObj(this.mapArray, new TileSetObj(this.sprites["roads"]));
+    this.isometricSize = this.map.isometricSize;
     this.waves = [];
     this.gridToIso = function(gridPoint) {
         let iPoint = gridPoint.multi(this.isometricSize).convert();
-        return iPoint.add(0, this.map.tiles[0].img.height / 2);
+        return iPoint.add(0, this.map.getHeight() / 2);
     };
     this.getGridPos = function(Point) {
         return Point.fdiv(this.isometricSize);
