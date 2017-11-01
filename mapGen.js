@@ -121,22 +121,18 @@ function CreepObj(sprite, point, heading) {
     this.point = point;
     this.heading = heading;
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
-    this.row = 0, this.col = 0;
+    this.facing = 0, this.col = 0;
+    this.changeFacing = { "N": 0, "S": 1, "E": 2, "W": 3, };
     this.setHeading = function(heading) {
         this.heading = heading;
-        switch (heading) {
-            case "N": this.row = 0; break;
-            case "S": this.row = 1; break;
-            case "E": this.row = 2; break;
-            case "W": this.row = 3; break;
-        }
+        this.facing = this.changeFacing[heading];
     };
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
-        this.sprite.draw(this.col, this.row, drawPos.x, drawPos.y);
+        this.sprite.draw(this.col, this.facing, drawPos.x, drawPos.y);
     };
     this.nextCol = function() {
         ++this.col;
