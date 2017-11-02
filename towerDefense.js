@@ -24,7 +24,7 @@ function GameObj(canvas) {
             "initialHeading": "E",
         });
         let wave = new WaveObj(this.sprites["slime"], 6, this.map.startPoint,
-                               this.map.initialHeading);
+                               this.map.initialHeading, 32);
         this.waves.push(wave);
     };
     this.getNewCreepHeading = function(creep) {

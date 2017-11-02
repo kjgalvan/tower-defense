@@ -21,11 +21,12 @@ function CreepObj(sprite, point, heading) {
     };
 }
 
-function WaveObj(sprite, creationAmount, startingPoint, initialHeading) {
+function WaveObj(sprite, creationAmount, startingPoint, initialHeading, Spacing) {
     this.sprite = sprite;
     this.creationAmount = creationAmount;
     this.point = startingPoint;
     this.initialHeading = initialHeading;
+    this.spacing = Spacing;
     this.creeps = [];
     this.createCreep = function() {
         this.creeps.push(new CreepObj(
@@ -33,12 +34,13 @@ function WaveObj(sprite, creationAmount, startingPoint, initialHeading) {
         --this.creationAmount;
     };
     this.update = function(frame, isometricSize, getNewHeading, directions) {
-        if (this.creationAmount > 0 && frame % isometricSize == 0 )
+        if (this.creationAmount > 0 && frame % this.spacing == 0)
             this.createCreep();
-        for (creep of this.creeps) {
+        for (let i = 0; i < this.creeps.length; ++i) {
+            let creep = this.creeps[i];
             if (frame % 5 == 0)
                 creep.nextCol();
-            if (frame % isometricSize == 0)
+            if (frame % isometricSize == this.spacing * i % isometricSize)
                 creep.setHeading(getNewHeading(creep));
             creep.move(directions[creep.heading]);
         }
