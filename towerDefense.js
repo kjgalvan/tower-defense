@@ -6,25 +6,26 @@ function GameObj(canvas) {
         "roads": new SpriteObj(this.context,  "sprites/tileSheet.png", 2, 4),
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
     };
-    this.mapArray = [
-        [0, 5, 2, 2, 2, 6, 0],
-        [0, 1, 0, 0, 0, 3, 6],
-        [0, 1, 0, 0, 0, 0, 1],
-        [2, 4, 0, 5, 6, 0, 1],
-        [0, 0, 0, 1, 3, 2, 4],
-        [0, 0, 0, 1, 0, 0, 0],
-        [2, 2, 2, 4, 0, 0, 0]
-    ];
-    this.map = new MapObj(this.mapArray, new TileSetObj(this.sprites["roads"]));
+    this.map = new MapObj(new TileSetObj(this.sprites["roads"]));
     this.isometricSize = this.map.isometricSize;
     this.waves = [];
-    this.gridToIso = function(gridPoint) {
-        let iPoint = gridPoint.multi(this.isometricSize).convert();
-        return iPoint.add(0, this.map.getHeight() / 2);
-    };
     this.init = function() {
-        let Start = this.gridToIso(new PointObj(0, 6));
-        this.waves.push(new WaveObj(this.sprites["slime"], 6, Start, "E"));
+        this.map.applyLevel({
+            "mapArray": [
+                [0, 5, 2, 2, 2, 6, 0],
+                [0, 1, 0, 0, 0, 3, 6],
+                [0, 1, 0, 0, 0, 0, 1],
+                [2, 4, 0, 5, 6, 0, 1],
+                [0, 0, 0, 1, 3, 2, 4],
+                [0, 0, 0, 1, 0, 0, 0],
+                [2, 2, 2, 4, 0, 0, 0]
+            ],
+            "startPoint": new PointObj(0, 6),
+            "initialHeading": "E",
+        });
+        let wave = new WaveObj(this.sprites["slime"], 6, this.map.startPoint,
+                               this.map.initialHeading);
+        this.waves.push(wave);
     };
     this.getNewCreepHeading = function(creep) {
         let gridPos = this.map.getGridPos(creep.point);

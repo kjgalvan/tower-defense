@@ -26,8 +26,7 @@ function TileSetObj(sprite) {
     return this;
 }
 
-function MapObj(mapArray, tiles) {
-    this.mapArray = mapArray;
+function MapObj(tiles) {
     this.tiles = tiles;
     this.directions = {
         "N": (new PointObj(0, -1)).convert(),
@@ -36,11 +35,18 @@ function MapObj(mapArray, tiles) {
         "W": (new PointObj(-1, 0)).convert(),
     };
     this.isometricSize = this.tiles.getWidth() / 2;
-    this.getHeight = function() {
-        return this.tiles.getHeight();
+    this.mapArray = this.startPoint = this.initialHeading = undefined;
+    this.gridToIso = function(gridPoint) {
+        let iPoint = gridPoint.multi(this.isometricSize).convert();
+        return iPoint.add(0, this.tiles.getHeight() / 2);
+    };
+    this.applyLevel = function(level) {
+        this.mapArray = level.mapArray;
+        this.startPoint = this.gridToIso(level.startPoint);
+        this.initialHeading = level.initialHeading;
     };
     this.draw = function() {
-        let rowAmount = mapArray.length, colAmount = mapArray[0].length;
+        let rowAmount = this.mapArray.length, colAmount = this.mapArray[0].length;
         let iPoint, gridVal;
         for (x = 0; x < rowAmount; ++x) {
             for (y = 0; y < colAmount; ++y) {
