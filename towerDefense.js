@@ -1,6 +1,7 @@
 function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
+    this.pause = false;
     this.frame = 0;
     this.sprites = {
         "roads": new SpriteObj(this.context,  "sprites/tileSheet.png", 2, 4),
@@ -9,6 +10,10 @@ function GameObj(canvas) {
     this.map = new MapObj(new TileSetObj(this.sprites["roads"]));
     this.isometricSize = this.map.isometricSize;
     this.waves = [];
+    this.togglePause = function(e) {
+        if(e.keyCode === 112)
+            this.pause = !this.pause;
+    };
     this.init = function() {
         this.map.applyLevel({
             "mapArray": [
@@ -26,6 +31,7 @@ function GameObj(canvas) {
         let wave = new WaveObj(this.sprites["slime"], 6, this.map.startPoint,
                                this.map.initialHeading);
         this.waves.push(wave);
+        document.addEventListener("keypress", this.togglePause.bind(this));
     };
     this.getNewCreepHeading = function(creep) {
         let gridPos = this.map.getGridPos(creep.point);
@@ -47,9 +53,11 @@ function GameObj(canvas) {
         this.context.restore();
     };
     this.loop = function() {
-        this.update();
-        this.draw();
-        ++this.frame;
+        if(!this.pause){
+            this.update();
+            this.draw();
+            ++this.frame;
+        }
     };
     return this;
 }
