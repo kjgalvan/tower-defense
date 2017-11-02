@@ -32,13 +32,13 @@ function WaveObj(sprite, creationAmount, startingPoint, initialHeading) {
             this.sprite, this.point, this.initialHeading));
         --this.creationAmount;
     };
-    this.update = function(frame, getNewHeading, directions) {
-        if (this.creationAmount > 0 && frame % 50 == 0 )
+    this.update = function(frame, isometricSize, getNewHeading, directions) {
+        if (this.creationAmount > 0 && frame % isometricSize == 0 )
             this.createCreep();
         for (creep of this.creeps) {
             if (frame % 5 == 0)
                 creep.nextCol();
-            if (frame % 50 == 0)
+            if (frame % isometricSize == 0)
                 creep.setHeading(getNewHeading(creep));
             creep.move(directions[creep.heading]);
         }

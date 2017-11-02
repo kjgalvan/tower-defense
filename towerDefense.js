@@ -32,8 +32,10 @@ function GameObj(canvas) {
         return this.map.getNewHeading(gridPos, creep.heading);
     };
     this.update = function() {
-        for (wave of this.waves)
-            wave.update(this.frame, this.getNewCreepHeading.bind(this), this.map.directions);
+        for (wave of this.waves) {
+            wave.update(this.frame, this.isometricSize,
+                        this.getNewCreepHeading.bind(this), this.map.directions);
+        }
     };
     this.draw = function() {
         this.context.save();
