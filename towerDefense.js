@@ -1,3 +1,13 @@
+function MenuDisplayObj(sprite, Point) {
+    this.sprite = sprite;
+    this.origin = Point;
+    this.draw = function(Point, tileVal) {
+        Point = this.origin.add(Point.x * this.sprite.width, Point.y * this.sprite.height);
+        this.sprite.draw(
+            tileVal % 4, Math.floor(tileVal / 4), Point.x, Point.y);
+    };
+}
+
 function GameObj(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
