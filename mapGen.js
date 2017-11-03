@@ -1,14 +1,14 @@
 function TileSetObj(sprite) {
     this.sprite = sprite;
-    this.tiles = [
-        {"x": 0, "y": 0, "getNewHeading": undefined},
-        {"x": 2, "y": 0, "getNewHeading": (H) => { return H == "N" ? "N" : "S"; }},
-        {"x": 3, "y": 0, "getNewHeading": (H) => { return H == "E" ? "E" : "W"; }},
-        {"x": 0, "y": 1, "getNewHeading": (H) => { return H == "S" ? "E" : "N"; }},
-        {"x": 1, "y": 1, "getNewHeading": (H) => { return H == "S" ? "W" : "N"; }},
-        {"x": 2, "y": 1, "getNewHeading": (H) => { return H == "N" ? "E" : "S"; }},
-        {"x": 3, "y": 1, "getNewHeading": (H) => { return H == "N" ? "W" : "S"; }},
-        {"x": 1, "y": 0, "getNewHeading": undefined},
+    this.tileMovement = [
+        undefined,
+        undefined,
+        (H) => { return H == "N" ? "N" : "S"; },
+        (H) => { return H == "E" ? "E" : "W"; },
+        (H) => { return H == "S" ? "E" : "N"; },
+        (H) => { return H == "S" ? "W" : "N"; },
+        (H) => { return H == "N" ? "E" : "S"; },
+        (H) => { return H == "N" ? "W" : "S"; },
     ];
     this.getWidth = function() {
         return this.sprite.width;
@@ -17,11 +17,10 @@ function TileSetObj(sprite) {
         return this.sprite.height;
     };
     this.draw = function(x, y, tileVal) {
-        let tile = this.tiles[tileVal];
-        this.sprite.draw(tile.x, tile.y, x, y);
+        this.sprite.draw(tileVal % 4, Math.floor(tileVal / 4), x, y);
     };
     this.movement = function(tileVal, heading) {
-        return this.tiles[tileVal].getNewHeading(heading);
+        return this.tileMovement[tileVal](heading);
     };
     return this;
 }
