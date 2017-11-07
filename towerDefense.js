@@ -1,8 +1,11 @@
-function MenuDisplayObj(sprite, Point) {
+function MenuDisplayObj(sprite, origin, spacing) {
     this.sprite = sprite;
-    this.origin = Point;
+    this.origin = origin;
+    this.spacing = spacing === undefined ? new PointObj(0, 0) : spacing;
     this.draw = function(Point, tileVal) {
-        Point = this.origin.add(Point.x * this.sprite.width, Point.y * this.sprite.height);
+        Point = this.origin.add(
+            Point.x * (this.sprite.width + this.spacing.x),
+            Point.y * (this.sprite.height + this.spacing.y));
         this.sprite.draw(
             tileVal % 4, Math.floor(tileVal / 4), Point.x, Point.y);
     };
