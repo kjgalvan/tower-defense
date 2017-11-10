@@ -39,14 +39,12 @@ function GameObj(canvas) {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
-        let wavesCopy = this.waves.slice();
-        for (let i = 0; i < wavesCopy.length; ++i) {
-            let wave = wavesCopy[i];
-            if (wave.creeps.length == 0) {
-                this.waves.splice(i, 1);
-                continue;
-            }
-            wave.draw(this.context);
+        for (let i = 0; i < this.waves.length; ++i) {
+            let wave = this.waves[i];
+            if (wave.creeps.length > 0)
+                wave.draw(this.context);
+            else  // Remove and prevent skipping
+                this.waves.splice(i--, 1);
         }
         this.context.restore();
     };
