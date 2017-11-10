@@ -14,20 +14,26 @@ function CreepObj(sprite, point, heading, health) {
         this.point = this.point.add(heading.x, heading.y);
     };
     this.drawHealth = function(context, initHealth) {
-        context.lineWidth = 2;
-        context.strokeStyle = "Black";
-        //context.strokeStyle = "rgb(40, 48, 68)"; // Gunmetal
-        // context.fillStyle = "rgb(234, 82, 111)";  // Dark Pink
-        context.fillStyle = "rgb(195, 49, 73)";  // Dingy Dungeon
-        // context.fillStyle = "rgb(254, 93, 38)";  // Giants Orange
-        // context.fillStyle = "rgb(200, 70, 48)";  // Persian Red
-        // Current sprite SlimeIso too much padding
-        context.strokeRect(
-            this.point.x - this.sprite.width / 4 -1 , this.point.y + 8 - 1,
-            23 + 2, 5 + 2);
-        context.fillRect(
-            this.point.x - this.sprite.width / 4, this.point.y + 8,
-            this.health / initHealth * 23, 5);
+        var gradient = context.createLinearGradient(
+            this.point.x + this.centerFeet.x, 0,
+            this.point.x - this.centerFeet.x, 0);
+        gradient.addColorStop(0,"red");
+        gradient.addColorStop(0.5,"yellow");
+        gradient.addColorStop(1,"green");
+        context.fillStyle = gradient;
+        let pathLeft = this.point.x + this.centerFeet.x;
+        let pathTop = this.point.y + 8;
+        let percent = this.health / initHealth;
+        context.beginPath();
+        context.moveTo(pathLeft + 2.5, pathTop)
+        context.lineTo(pathLeft + percent * this.sprite.width - 2.5, pathTop)
+        context.arc(pathLeft + percent * this.sprite.width - 2.5, pathTop + 2.5, 2.5,
+                    1.5*Math.PI, 0.5*Math.PI);
+        context.lineTo(pathLeft + 2.5, pathTop + 5);
+        context.arc(pathLeft + 2.5, pathTop + 2.5, 2.5,
+                    0.5*Math.PI, 1.5*Math.PI);
+        context.stroke();
+        context.fill();
     };
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
