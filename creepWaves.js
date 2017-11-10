@@ -13,6 +13,19 @@ function CreepObj(sprite, point, heading, health) {
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
+    this.drawPill = function(context, point, length, radius, percent, fill) {
+        const arcTop = 1.5*Math.PI, arcBot = 0.5*Math.PI;
+        const Left = point.x + this.centerFeet.x, Top = point.y + 5;
+        context.beginPath();
+        context.moveTo(Left + radius, Top)
+        context.arc(Left + percent * length - radius, Top + radius, radius,
+                    arcTop, arcBot);
+        context.arc(Left + radius, Top + radius, radius, arcBot, arcTop);
+        context.strokeStyle = "Black";
+        context.fillStyle = fill;
+        context.stroke();
+        context.fill();
+    };
     this.drawHealth = function(context, initHealth) {
         var gradient = context.createLinearGradient(
             this.point.x + this.centerFeet.x, 0,
@@ -20,20 +33,8 @@ function CreepObj(sprite, point, heading, health) {
         gradient.addColorStop(0,"red");
         gradient.addColorStop(0.5,"yellow");
         gradient.addColorStop(1,"green");
-        context.fillStyle = gradient;
-        let pathLeft = this.point.x + this.centerFeet.x;
-        let pathTop = this.point.y + 8;
-        let percent = this.health / initHealth;
-        context.beginPath();
-        context.moveTo(pathLeft + 2.5, pathTop)
-        context.lineTo(pathLeft + percent * this.sprite.width - 2.5, pathTop)
-        context.arc(pathLeft + percent * this.sprite.width - 2.5, pathTop + 2.5, 2.5,
-                    1.5*Math.PI, 0.5*Math.PI);
-        context.lineTo(pathLeft + 2.5, pathTop + 5);
-        context.arc(pathLeft + 2.5, pathTop + 2.5, 2.5,
-                    0.5*Math.PI, 1.5*Math.PI);
-        context.stroke();
-        context.fill();
+        this.drawPill(context, this.point, this.sprite.width, 2.5,
+                      this.health / initHealth, gradient);
     };
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
