@@ -23,9 +23,6 @@ function GameObj(canvas) {
             "startPoint": new PointObj(0, 6),
             "initialHeading": "E",
         });
-        let wave = new WaveObj(this.sprites["slime"], 6, this.map.startPoint,
-                               this.map.initialHeading);
-        this.waves.push(wave);
     };
     this.getNewCreepHeading = function(creep) {
         let gridPos = this.map.getGridPos(creep.point);
@@ -42,8 +39,15 @@ function GameObj(canvas) {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
-        for (wave of this.waves)
-            wave.draw();
+        let wavesCopy = this.waves.slice();
+        for (let i = 0; i < wavesCopy.length; ++i) {
+            let wave = wavesCopy[i];
+            if (wave.creeps.length == 0) {
+                this.waves.splice(i, 1);
+                continue;
+            }
+            wave.draw(this.context);
+        }
         this.context.restore();
     };
     this.plague = function() {
@@ -53,6 +57,11 @@ function GameObj(canvas) {
         }
     };
     this.loop = function() {
+        if (this.waves.length == 0) {
+            let wave = new WaveObj(this.sprites["slime"], 6, this.map.startPoint,
+                                   this.map.initialHeading, 50);
+            this.waves.push(wave);
+        }
         this.update();
         this.draw();
         ++this.frame;
