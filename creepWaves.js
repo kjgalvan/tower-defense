@@ -53,7 +53,13 @@ function WaveObj(sprite, creationAmount, startingPoint, initialHeading, initHeal
     this.update = function(frame, isometricSize, getNewHeading, directions) {
         if (this.creationAmount > 0 && frame % isometricSize == 0 )
             this.createCreep();
-        for (creep of this.creeps) {
+        let creepCopy = this.creeps.slice();
+        for (let i = 0; i < creepCopy.length; ++i) {
+            let creep = creepCopy[i];
+            if (creep.health <= 0) {
+                this.creeps.splice(i, 1);
+                continue;
+            }
             if (frame % 5 == 0)
                 creep.nextCol();
             if (frame % isometricSize == 0)
