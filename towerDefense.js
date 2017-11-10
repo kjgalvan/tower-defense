@@ -46,10 +46,20 @@ function GameObj(canvas) {
             wave.draw();
         this.context.restore();
     };
+    this.plague = function() {
+        for (wave of this.waves) {
+            for (creep of wave.creeps)
+                creep.health -= Math.floor(Math.random() * 10);
+        }
+    };
     this.loop = function() {
         this.update();
         this.draw();
         ++this.frame;
+        if (this.frame % 50 == 0) {
+            this.plague();
+        }
+            
     };
     return this;
 }
