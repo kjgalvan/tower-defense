@@ -56,8 +56,11 @@ function GameObj(canvas) {
     };
     this.loop = function() {
         if (this.waves.length == 0 && this.frame % 50 == 0) {
-            let wave = new WaveObj( this.sprites["slime"], 6,
-                this.map.startPoint, this.map.initialHeading, 25, 50);
+            let create = Math.floor(Math.random() * 7) + 4;  // 4 - 10
+            let spacing = Math.floor(Math.random() * 70) + 30;  // 30 - 99
+            let health = 250 / create;
+            let wave = new WaveObj( this.sprites["slime"], create,
+                this.map.startPoint, this.map.initialHeading, spacing, health);
             this.waves.push(wave);
         }
         this.update();
