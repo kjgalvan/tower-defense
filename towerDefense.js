@@ -12,20 +12,17 @@ function GameObj(canvas) {
     this.init = function() {
         this.map.applyLevel({
             "mapArray": [
-                [0, 5, 2, 2, 2, 6, 0],
-                [0, 1, 0, 0, 0, 3, 6],
-                [0, 1, 0, 0, 0, 0, 1],
-                [2, 4, 0, 5, 6, 0, 1],
-                [0, 0, 0, 1, 3, 2, 4],
-                [0, 0, 0, 1, 0, 0, 0],
-                [2, 2, 2, 4, 0, 0, 0]
+                [0, 6, 3, 3, 3, 7, 0],
+                [0, 2, 0, 0, 0, 4, 7],
+                [0, 2, 0, 0, 0, 0, 2],
+                [3, 5, 0, 6, 7, 0, 2],
+                [0, 0, 0, 2, 4, 3, 5],
+                [0, 0, 0, 2, 0, 0, 0],
+                [3, 3, 3, 5, 0, 0, 0]
             ],
             "startPoint": new PointObj(0, 6),
             "initialHeading": "E",
         });
-        let wave = new WaveObj(this.sprites["slime"], 6, this.map.startPoint,
-                               this.map.initialHeading, 32);
-        this.waves.push(wave);
     };
     this.getNewCreepHeading = function(creep) {
         let gridPos = this.map.getGridPos(creep.point);
@@ -42,14 +39,34 @@ function GameObj(canvas) {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
-        for (wave of this.waves)
-            wave.draw();
+        for (let i = 0; i < this.waves.length; ++i) {
+            let wave = this.waves[i];
+            if (wave.creeps.length > 0)
+                wave.draw(this.context);
+            else  // Remove and prevent skipping
+                this.waves.splice(i--, 1);
+        }
         this.context.restore();
     };
+    this.plague = function() {
+        for (wave of this.waves) {
+            for (creep of wave.creeps)
+                creep.health -= Math.floor(Math.random() * 10);
+        }
+    };
     this.loop = function() {
+        if (this.waves.length == 0 && this.frame % 50 == 0) {
+            let wave = new WaveObj( this.sprites["slime"], 6,
+                this.map.startPoint, this.map.initialHeading, 25, 50);
+            this.waves.push(wave);
+        }
         this.update();
         this.draw();
         ++this.frame;
+        if (this.frame % 50 == 0) {
+            this.plague();
+        }
+            
     };
     return this;
 }
