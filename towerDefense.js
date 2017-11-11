@@ -43,8 +43,8 @@ function GameObj(canvas) {
             let wave = this.waves[i];
             if (wave.creeps.length > 0)
                 wave.draw(this.context);
-            else  // Remove and prevent skipping
-                this.waves.splice(i--, 1);
+            else if (wave.created == wave.creationAmount)
+                this.waves.splice(i--, 1);  // Remove and prevent skipping
         }
         this.context.restore();
     };

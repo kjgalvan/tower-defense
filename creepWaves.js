@@ -1,9 +1,10 @@
-function CreepObj(sprite, point, heading, health, wavePos) {
+function CreepObj(sprite, point, heading, health, wavePos, creationFrame) {
     this.sprite = sprite;
     this.point = point;
     this.heading = heading;
     this.health = health;
     this.wavePos = wavePos;
+    this.creationFrame = creationFrame;
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.col = 0;
     this.changeFacing = { "N": 0, "S": 1, "E": 2, "W": 3, };
@@ -58,14 +59,14 @@ function WaveObj(sprite, creationAmount, startingPoint, initHeading,
     this.initHealth = initHealth;
     this.created = 0;
     this.creeps = [];
-    this.createCreep = function() {
+    this.createCreep = function(frame) {
         this.creeps.push(new CreepObj(
             this.sprite, this.point, this.initHeading, this.initHealth,
-            this.created++));
+            this.created++, frame));
     };
     this.update = function(frame, isometricSize, getNewHeading, directions) {
         if (this.created < this.creationAmount && frame % this.spacing == 0)
-            this.createCreep();
+            this.createCreep(frame);
         for (let i = 0; i < this.creeps.length; ++i) {
             let creep = this.creeps[i];
             if (creep.health <= 0) {
@@ -75,7 +76,7 @@ function WaveObj(sprite, creationAmount, startingPoint, initHeading,
             }
             if (frame % 5 == 0)
                 creep.nextCol();
-            if (frame % isometricSize == this.spacing * creep.wavePos % isometricSize)
+            if ((frame - creep.creationFrame) % isometricSize == 0)
                 creep.setHeading(getNewHeading(creep));
             creep.move(directions[creep.heading]);
         }
