@@ -36,12 +36,11 @@ function MapObj(tiles) {
     this.isometricSize = this.tiles.getWidth() / 2;
     this.mapArray = this.startPoint = this.initialHeading = undefined;
     this.gridToIso = function(gridPoint) {
-        let iPoint = gridPoint.multi(this.isometricSize).convert();
-        return iPoint.add(0, this.tiles.getHeight() / 2);
+        return gridPoint.multi(this.isometricSize).convert();
     };
     this.applyLevel = function(level) {
         this.mapArray = level.mapArray;
-        this.startPoint = this.gridToIso(level.startPoint);
+        this.startPoint = this.gridToIso(level.startPoint).add(0, this.tiles.getHeight() / 2);
         this.initialHeading = level.initialHeading;
     };
     this.draw = function() {
@@ -62,6 +61,10 @@ function MapObj(tiles) {
     this.getNewHeading = function(gridPos, heading) {
         let gridVal = this.mapArray[gridPos.y][gridPos.x]
         return this.tiles.movement(gridVal, heading);
+    };
+    this.isMap = function(gridPoint) {
+        try { return this.mapArray[gridPoint.y][gridPoint.x] != undefined; }
+        catch (e) { return false; }
     };
     return this;
 }
