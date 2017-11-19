@@ -8,6 +8,8 @@ function GameObj(canvas) {
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
     };
     this.map = new MapObj(new TileSetObj(this.sprites["roads"]));
+    this.towerMenu = new MenuDisplayObj(
+        this.sprites["cannon"], new PointObj(600, 300), new PointObj(30, 0));
     this.isometricSize = this.map.isometricSize;
     this.waves = [], this.towers = [];
     this.init = function() {
@@ -27,8 +29,6 @@ function GameObj(canvas) {
         let wave = new WaveObj(this.sprites["slime"], 6, this.map.startPoint,
                                this.map.initialHeading);
         this.waves.push(wave);
-        this.towers.push(new TowerObj(this.context, this.sprites["cannon"],
-                                      this.map.gridToIso(new PointObj(0, 0))));
     };
     this.getNewCreepHeading = function(creep) {
         let gridPos = this.map.getGridPos(creep.point);
@@ -43,6 +43,8 @@ function GameObj(canvas) {
     this.draw = function() {
         this.context.save();
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let i = 0; i < 3; ++i)
+            this.towerMenu.draw(5, i, new PointObj(i, 0));
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
         for (wave of this.waves)
