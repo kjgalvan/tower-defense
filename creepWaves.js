@@ -16,28 +16,28 @@ function CreepObj(sprite, point, heading, health, wavePos, creationFrame) {
     this.move = function(heading) {
         this.point = this.point.add(heading.x, heading.y);
     };
-    this.drawPill = function(context, point, length, radius, percent, fill) {
+    this.drawPillShape = function(context, point, length, radius, percent, fill) {
         const arcTop = 1.5*Math.PI, arcBot = 0.5*Math.PI;
-        const Left = point.x + this.centerFeet.x, Top = point.y + 5;
         context.beginPath();
-        context.moveTo(Left + radius, Top)
-        context.arc(Left + percent * length - radius, Top + radius, radius,
-                    arcTop, arcBot);
-        context.arc(Left + radius, Top + radius, radius, arcBot, arcTop);
+        context.moveTo(point.x + radius, point.y)
+        context.arc(point.x + percent * length - radius, point.y + radius,
+                    radius, arcTop, arcBot);
+        context.arc(point.x + radius, point.y + radius, radius, arcBot, arcTop);
         context.strokeStyle = "Black";
         context.fillStyle = fill;
         context.stroke();
         context.fill();
     };
     this.drawHealth = function(context, initHealth) {
-        var gradient = context.createLinearGradient(
-            this.point.x + this.centerFeet.x, 0,
-            this.point.x - this.centerFeet.x, 0);
+        let healthBarPoint = new PointObj(
+            this.point.x - this.sprite.width / 2, this.point.y + 5);
+        let gradient = context.createLinearGradient(
+            healthBarPoint.x, 0, healthBarPoint.x + this.sprite.width, 0);
         gradient.addColorStop(0,"red");
         gradient.addColorStop(0.5,"yellow");
         gradient.addColorStop(1,"green");
-        this.drawPill(context, this.point, this.sprite.width, 2.5,
-                      this.health / initHealth, gradient);
+        this.drawPillShape(context, healthBarPoint, this.sprite.width, 2.5,
+                           this.health / initHealth, gradient);
     };
     this.draw = function() {
         let drawPos = this.point.add(this.centerFeet.x, this.centerFeet.y);
