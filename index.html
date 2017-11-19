@@ -7,22 +7,19 @@
         canvas { background: skyblue; }
         .hidden { display: none; }
     </style>
+    <script src="Utils.js"></script>
     <script src="mapGen.js"></script>
+    <script src="creepWaves.js"></script>
+    <script src="towers.js"></script>
+    <script src="towerDefense.js"></script>
 </head>
 
 <body onload="init()">
 
 <canvas height=400 width=800></canvas>
 
-<!-- Files are missed named with isometric north positioned to the right -->
-<img src="roadTiles_v2/png/grass.png" id="grass" class="hidden">
-<img src="roadTiles_v2/png/roadEast.png" id="north" class="hidden">
-<img src="roadTiles_v2/png/roadNorth.png" id="east" class="hidden">
-<img src="roadTiles_v2/png/roadCornerES.png" id="nw" class="hidden">
-<img src="roadTiles_v2/png/roadCornerNE.png" id="ne" class="hidden">
-<img src="roadTiles_v2/png/roadCornerWS.png" id="sw" class="hidden">
-<img src="roadTiles_v2/png/roadCornerNW.png" id="se" class="hidden">
-<img src="sprites/Slime compact.png" class="hidden">
+<img src="sprites/tileSheet.png" class="hidden">
+<img src="sprites/SlimeIso.png" class="hidden">
 <img src="sprites/CannonMap.png" class="hidden">
 
 </body>
