@@ -35,6 +35,10 @@ function PointObj(x, y, type="Cartesian") {
         return new PointObj(
             Math.floor( this.x / z), Math.floor(this.y / y), this.type);
     };
+    this.change = function(x,y) {
+        this.x = x;
+        this.y = y;
+    };
     return this;
 }
 
@@ -56,6 +60,7 @@ function SpriteObj(context, imgSheet, imgRows, imgCols) {
 function MenuDisplayObj(sprite, origin, spacing) {
     this.sprite = sprite;
     this.origin = origin;
+    this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.spacing = spacing === undefined ? new PointObj(0, 0) : spacing;
     this.draw = function(sheetX, sheetY, Point) {
         Point = this.origin.add(

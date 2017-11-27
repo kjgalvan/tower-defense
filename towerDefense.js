@@ -3,12 +3,14 @@ function GameObj(canvas) {
     this.context = canvas.getContext('2d');
     this.frame = 0;
     this.mousePos = new PointObj(-1, -1);
+    //this.towerOffset = new PointObj(-1,-1);
     this.clickedTower = undefined;
     this.sprites = {
         "towers": new SpriteObj(this.context, "sprites/Towers.png", 27, 8),
         "roads": new SpriteObj(this.context,  "sprites/tileSheet.png", 2, 4),
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
     };
+    this.clickedTowerObj = new TowerObj(this.sprites["towers"],this.mousePos,0);
     this.map = new MapObj(new TileSetObj(this.sprites["roads"]));
     this.towerMenu = new MenuDisplayObj(
         this.sprites["towers"], new PointObj(20, 380), new PointObj(30, 0));
@@ -21,20 +23,25 @@ function GameObj(canvas) {
     };
     this.mouseMove = function(e) {
         let rect = canvas.getBoundingClientRect();
-        this.mousePos = new PointObj(e.clientX - rect.x, e.clientY - rect.y);
+        this.mousePos.change(e.clientX - rect.x, e.clientY - rect.y);
     };
     this.mouseDown = function() {
         let cell = this.towerMenu.cellClicked(this.mousePos);
         if (cell.y === 0 && cell.x >= 0 && cell.x <= 8) {
             this.clickedTower = cell;
+            this.clickedTowerObj.changeTower(this.clickedTower.x*3);
+            this.towerOffset = this.towerMenu.origin.add(
+                this.clickedTower.x * (this.towerMenu.sprite.width + this.towerMenu.spacing.x),
+                this.clickedTower.y * (this.towerMenu.sprite.height + this.towerMenu.spacing.y));
+            this.towerOffset = this.towerOffset.add(-this.mousePos.x,-this.mousePos.y);
+            console.log(this.towerOffset);
         }
     };
     this.mouseUp = function() {
         if (this.clickedTower !== undefined && this.map.isMap(this.mouseToGrid())) {
             this.towers.push(new TowerObj(this.sprites["towers"],this.map.gridToIso(this.mouseToGrid()).add(0, this.map.getTilesHeight() / 2),this.clickedTower.x*3));
-            console.log(this.mouseToGrid());
-            this.clickedTower = undefined;
         }
+        this.clickedTower = undefined;
     };
     this.highlightTile = function(gPoint) {
         let iPoint = this.map.gridToIso(gPoint);
@@ -79,6 +86,8 @@ function GameObj(canvas) {
             wave.update(this.frame, this.isometricSize,
                         this.getNewCreepHeading.bind(this), this.map.directions);
         }
+        if (this.clickedTower !== undefined)
+            this.clickedTowerObj.move(this.mousePos);
     };
     this.draw = function() {
         this.context.save();
@@ -94,6 +103,8 @@ function GameObj(canvas) {
         for (tower of this.towers)
             tower.draw();
         this.context.restore();
+        if (this.clickedTower !== undefined)
+            this.clickedTowerObj.draw();
     };
     this.loop = function() {
         this.update();

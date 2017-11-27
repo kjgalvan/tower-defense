@@ -11,4 +11,11 @@ function TowerObj(sprite, point, level) {
     this.upgrade = function() {
         this.level = (this.level + 1) % 3;
     };
+    this.changeTower = function(level) {
+        this.level = level;
+    };
+    this.move = function(point) {
+        this.point = point;
+    };
 }
+
