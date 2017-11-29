@@ -62,6 +62,9 @@ function MapObj(tiles) {
         let gridVal = this.mapArray[gridPos.y][gridPos.x]
         return this.tiles.movement(gridVal, heading);
     };
+    this.getGridVal = function(gridPos) {
+        return this.mapArray[gridPos.y][gridPos.x];
+    };
     this.isMap = function(gridPoint) {
         try { return this.mapArray[gridPoint.y][gridPoint.x] != undefined; }
         catch (e) { return false; }

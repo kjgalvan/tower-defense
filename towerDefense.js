@@ -34,12 +34,17 @@ function GameObj(canvas) {
                 this.clickedTower.x * (this.towerMenu.sprite.width + this.towerMenu.spacing.x),
                 this.clickedTower.y * (this.towerMenu.sprite.height + this.towerMenu.spacing.y));
             this.towerOffset = this.towerOffset.add(-this.mousePos.x,-this.mousePos.y);
-            console.log(this.towerOffset);
         }
     };
     this.mouseUp = function() {
-        if (this.clickedTower !== undefined && this.map.isMap(this.mouseToGrid())) {
-            this.towers.push(new TowerObj(this.sprites["towers"],this.map.gridToIso(this.mouseToGrid()).add(0, this.map.getTilesHeight() / 2),this.clickedTower.x*3));
+        if (this.clickedTower !== undefined && this.map.isMap(this.mouseToGrid()) && (this.map.getGridVal(this.mouseToGrid()) === 0)) {
+            towerCheck = false;
+            for (tower of this.towers) {
+                if ((this.map.getGridPos(tower.point).x === this.mouseToGrid().x) && (this.map.getGridPos(tower.point).y === this.mouseToGrid().y))
+                    towerCheck = true;
+            }
+            if (towerCheck === false) 
+                this.towers.push(new TowerObj(this.sprites["towers"],this.map.gridToIso(this.mouseToGrid()).add(0, this.map.getTilesHeight() / 2),this.clickedTower.x*3));
         }
         this.clickedTower = undefined;
     };
