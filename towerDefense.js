@@ -93,6 +93,18 @@ function GameObj(canvas) {
         }
         if (this.clickedTower !== undefined)
             this.clickedTowerObj.move(this.mousePos);
+        for(tower of this.towers) {
+            console.log("Here");
+            for(wave of this.waves) {
+                for(creep of wave.creeps) {
+                    if(tower.point.distFrom(creep.point) < 100) {
+                        console.log("Fire!");
+                        console.log(tower.point.angleBetween(creep.point));
+                        break;
+                    }
+                }
+            }
+        }
     };
     this.draw = function() {
         this.context.save();
