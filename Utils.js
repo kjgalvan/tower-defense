@@ -77,7 +77,6 @@ function SpriteObj(context, imgSheet, imgRows, imgCols) {
 function MenuDisplayObj(sprite, origin, spacing) {
     this.sprite = sprite;
     this.origin = origin;
-    this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.spacing = spacing === undefined ? new PointObj(0, 0) : spacing;
     this.draw = function(sheetX, sheetY, Point) {
         Point = this.origin.add(
@@ -86,7 +85,13 @@ function MenuDisplayObj(sprite, origin, spacing) {
         this.sprite.draw(sheetX, sheetY, Point.x, Point.y);
     };
     this.cellClicked = function(point) {
-        let fromOrigin = point.add(-origin.x,-origin.y);
-        return fromOrigin.fdiv(this.sprite.width + this.spacing.x,this.sprite.height + this.spacing.y);
+        let width = this.sprite.width + this.spacing.x;
+        let height = this.sprite.height + this.spacing.y;
+        let cell = new PointObj(Math.floor((point.x - origin.x) / width),
+                                Math.floor((point.y - origin.y) / height));
+        let innerPos = new PointObj(-(point.x - origin.x) % width,
+                                    -(point.y - origin.y) % height);
+        return {"cell": cell, "innerPos": innerPos};
     };
+    return this;
 }

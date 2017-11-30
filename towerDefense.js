@@ -3,14 +3,12 @@ function GameObj(canvas) {
     this.context = canvas.getContext('2d');
     this.frame = 0;
     this.mousePos = new PointObj(-1, -1);
-    //this.towerOffset = new PointObj(-1,-1);
     this.clickedTower = undefined;
     this.sprites = {
         "towers": new SpriteObj(this.context, "sprites/Towers.png", 27, 8),
         "roads": new SpriteObj(this.context,  "sprites/tileSheet.png", 2, 4),
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
     };
-    this.clickedTowerObj = new TowerObj(this.sprites["towers"],this.mousePos,0);
     this.map = new MapObj(new TileSetObj(this.sprites["roads"]));
     this.towerMenu = new MenuDisplayObj(
         this.sprites["towers"], new PointObj(20, 380), new PointObj(30, 0));
@@ -18,7 +16,7 @@ function GameObj(canvas) {
     this.waves = [], this.towers = [];
     this.mouseToGrid = function() {
         let iMousePoint = new PointObj(this.mousePos.x - this.canvas.width / 2,
-                                    this.mousePos.y, "isometric");
+                                       this.mousePos.y, "isometric");
         return this.map.getGridPos(iMousePoint);
     };
     this.mouseMove = function(e) {
@@ -26,25 +24,20 @@ function GameObj(canvas) {
         this.mousePos.change(e.clientX - rect.x, e.clientY - rect.y);
     };
     this.mouseDown = function() {
-        let cell = this.towerMenu.cellClicked(this.mousePos);
-        if (cell.y === 0 && cell.x >= 0 && cell.x <= 8) {
-            this.clickedTower = cell;
-            this.clickedTowerObj.changeTower(this.clickedTower.x*3);
-            this.towerOffset = this.towerMenu.origin.add(
-                this.clickedTower.x * (this.towerMenu.sprite.width + this.towerMenu.spacing.x),
-                this.clickedTower.y * (this.towerMenu.sprite.height + this.towerMenu.spacing.y));
-            this.towerOffset = this.towerOffset.add(-this.mousePos.x,-this.mousePos.y);
+        let clicked = this.towerMenu.cellClicked(this.mousePos);
+        if (clicked.cell.y === 0 && clicked.cell.x >= 0 && clicked.cell.x < 9) {
+            this.clickedTower = new TowerObj(
+                this.sprites["towers"], clicked.innerPos, clicked.cell.x * 3);
         }
     };
     this.mouseUp = function() {
-        if (this.clickedTower !== undefined && this.map.isMap(this.mouseToGrid()) && (this.map.getGridVal(this.mouseToGrid()) === 0)) {
-            towerCheck = false;
-            for (tower of this.towers) {
-                if ((this.map.getGridPos(tower.point).x === this.mouseToGrid().x) && (this.map.getGridPos(tower.point).y === this.mouseToGrid().y))
-                    towerCheck = true;
-            }
-            if (towerCheck === false) 
-                this.towers.push(new TowerObj(this.sprites["towers"],this.map.gridToIso(this.mouseToGrid()).add(0, this.map.getTilesHeight() / 2),this.clickedTower.x*3));
+        let mouseGridPos = this.mouseToGrid();
+        if (this.clickedTower !== undefined && this.map.isMap(mouseGridPos) &&
+            this.map.getGridVal(mouseGridPos) === 0)
+        {
+            let iPoint = this.map.gridToIso(mouseGridPos);
+            this.clickedTower.point = iPoint.add(0, this.isometricSize / 2);
+            this.towers.push(this.clickedTower);
         }
         this.clickedTower = undefined;
     };
@@ -91,8 +84,6 @@ function GameObj(canvas) {
             wave.update(this.frame, this.isometricSize,
                         this.getNewCreepHeading.bind(this), this.map.directions);
         }
-        if (this.clickedTower !== undefined)
-            this.clickedTowerObj.move(this.mousePos);
         for(tower of this.towers) {
             console.log("Here");
             for(wave of this.waves) {
@@ -120,8 +111,10 @@ function GameObj(canvas) {
         for (tower of this.towers)
             tower.draw();
         this.context.restore();
-        if (this.clickedTower !== undefined)
-            this.clickedTowerObj.draw();
+        if (this.clickedTower !== undefined) {
+            console.log(this.mousePos);
+            this.clickedTower.draw(this.mousePos);
+        }
     };
     this.loop = function() {
         this.update();
