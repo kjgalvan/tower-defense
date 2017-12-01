@@ -22,6 +22,10 @@ function PointObj(x, y, type="Cartesian") {
         y = (y === undefined ? z : y);
         return new PointObj(this.x + z, this.y + y, this.type);
     };
+    this.iAdd = function(point) {
+        this.x += point.x;
+        this.y += point.y;
+    },
     this.sub = function(z, y=undefined) {
         y = (y === undefined ? z : y);
         return new PointObj(this.x - z, this.y - y, this.type);
@@ -43,6 +47,10 @@ function PointObj(x, y, type="Cartesian") {
         return new PointObj(
             Math.floor( this.x / z), Math.floor(this.y / y), this.type);
     };
+    this.iDiv = function(int) {
+        this.x=this.x / int;
+        this.y=this.y / int;
+    };
     this.distFrom = function(point) {
         let difference = this.aSub(point.x, point.y);
         return Math.sqrt((difference.x * difference.x) + (difference.y * difference.y));
@@ -52,6 +60,10 @@ function PointObj(x, y, type="Cartesian") {
         degrees = Math.abs(degrees);  
         return degrees;	
     }; 
+    this.compAngle = function(angle) {
+        let compAngle = 90;
+        return compAngle - angle;
+    };
     this.change = function(x,y) {
         this.x = x;
         this.y = y;

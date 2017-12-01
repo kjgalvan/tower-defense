@@ -9,8 +9,9 @@ function GameObj(canvas) {
         "towers": new SpriteObj(this.context, "sprites/Towers.png", 27, 8),
         "roads": new SpriteObj(this.context,  "sprites/tileSheet.png", 2, 4),
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
+        "balls": new SpriteObj(this.context, "sprites/Energy Ball.png", 8, 12),
     };
-    this.clickedTowerObj = new TowerObj(this.sprites["towers"],this.mousePos,0);
+    this.clickedTowerObj = new TowerObj(this.sprites["towers"], this.mousePos, 0, false, this.sprites.balls);
     this.map = new MapObj(new TileSetObj(this.sprites["roads"]));
     this.towerMenu = new MenuDisplayObj(
         this.sprites["towers"], new PointObj(20, 380), new PointObj(30, 0));
@@ -44,7 +45,8 @@ function GameObj(canvas) {
                     towerCheck = true;
             }
             if (towerCheck === false) 
-                this.towers.push(new TowerObj(this.sprites["towers"],this.map.gridToIso(this.mouseToGrid()).add(0, this.map.getTilesHeight() / 2),this.clickedTower.x*3));
+                this.towers.push(new TowerObj(this.sprites["towers"], this.map.gridToIso(this.mouseToGrid()).add(0, this.map.getTilesHeight() / 2),
+                                    this.clickedTower.x*3, true, this.sprites.balls));
         }
         this.clickedTower = undefined;
     };
@@ -94,7 +96,6 @@ function GameObj(canvas) {
         if (this.clickedTower !== undefined)
             this.clickedTowerObj.move(this.mousePos);
         for(tower of this.towers) {
-            console.log("Here");
             for(wave of this.waves) {
                 for(creep of wave.creeps) {
                     if(tower.point.distFrom(creep.point) < 100) {
