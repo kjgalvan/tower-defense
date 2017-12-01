@@ -1,7 +1,7 @@
 function TowerObj(sprite, point, level, emitter, partSprite) {
     this.sprite = sprite;
     this.point = point;
-    this.emitter = new Emitter(this.point,new PointObj(2,2),100,1,partSprite);
+    this.emitter = new Emitter(this.point,new PointObj(0,0),300,1,partSprite);
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.level = level;
     this.col = 6;

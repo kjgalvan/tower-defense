@@ -99,8 +99,11 @@ function GameObj(canvas) {
             for(wave of this.waves) {
                 for(creep of wave.creeps) {
                     if(tower.point.distFrom(creep.point) < 100) {
-                        console.log("Fire!");
-                        console.log(tower.point.angleBetween(creep.point));
+                        //console.log(tower.point.getVector(creep.point));
+                        tower.emitter.update(tower.point.getVector(creep.point));
+                        //tower.emitter.update(new PointObj(20,20));
+                        //console.log(tower.point);
+                        //console.log(tower.point.angleBetween(creep.point));
                         break;
                     }
                 }

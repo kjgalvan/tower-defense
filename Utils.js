@@ -56,13 +56,64 @@ function PointObj(x, y, type="Cartesian") {
         return Math.sqrt((difference.x * difference.x) + (difference.y * difference.y));
     };
     this.angleBetween = function(point) {	  
-        let degrees = Math.atan2(this.x - point.x, this.y - point.y) * 180 / Math.PI; 
-        degrees = Math.abs(degrees);  
-        return degrees;	
+        return Math.atan2(point.y - this.y, point.x - this.x) * 180 / Math.PI;
     }; 
     this.compAngle = function(angle) {
-        let compAngle = 90;
-        return compAngle - angle;
+        return 90 - angle;
+    };
+    this.suppAngle = function(angle) {
+        return 180 - angle;
+    };
+    this.lawSines = function(angle) {
+        return Math.sin(angle * (Math.PI/180)) * (1 / Math.sin(90 * (Math.PI/180)))
+    };
+    this.getVector= function(point) {
+        let angle = this.angleBetween(point);
+        var vectorY, vectorX;
+        switch(angle) {
+            case 0:
+                return new PointObj(1,0);
+                break;
+            case 90:
+                return new PointObj(0,1);
+                break;
+            case -90:
+                return new PointObj(0,-1);
+                break;
+            case 180:
+                return new PointObj(-1,0);
+                break;
+            default:
+                if (angle < 0) {
+                    angle = Math.abs(angle);
+                    switch (Math.floor(angle/90)) {
+                        case 0:
+                            vectorY = this.lawSines(angle);
+                            vectorX = this.lawSines(180 - (angle+90))
+                            return new PointObj(vectorX,-vectorY);
+                            break;
+                        case 1:
+                            vectorY = this.lawSines(this.suppAngle(angle));
+                            vectorX = this.lawSines(180 - (this.suppAngle(angle)+90))
+                            return new PointObj(-vectorX,-vectorY);
+                            break;
+                    }
+                }
+                else {
+                    switch (Math.floor(angle/90)) {
+                        case 0:
+                            vectorY = this.lawSines(angle);
+                            vectorX = this.lawSines(180 - (angle+90))
+                            return new PointObj(vectorX,vectorY);
+                            break;
+                        case 1:
+                            vectorY = this.lawSines(this.suppAngle(angle));
+                            vectorX = this.lawSines(180 - (this.suppAngle(angle)+90))
+                            return new PointObj(-vectorX,vectorY);
+                            break;
+                    }
+                }
+        }
     };
     this.change = function(x,y) {
         this.x = x;

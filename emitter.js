@@ -8,15 +8,17 @@ function Emitter(point,direction,lifespan,numberofparticles,partSprite) {
     this.renew = function(direction,location,lifespan) {
         this.location = location;
         this.direction = direction;
-        this.lifespan = lifespan;     
+        this.lifespan = lifespan;  
     };
-    this.update = function(direction,location) {
+    this.update = function(direction) {
         this.direction = direction;
-        this.location = location;
+        for(var i=0;i<this.particleCount;i++) {
+            this.particles[i].update(this.direction);
+        }
     };
     this.draw = function() {  
         for(var i=0;i<this.particleCount;i++) {
-            this.particles[i].update();
+            this.particles[i].update(this.direction);
             if(!this.particles[i].isDead())
                 this.particles[i].draw();
         } 
