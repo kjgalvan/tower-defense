@@ -48,9 +48,9 @@ function PointObj(x, y, type="Cartesian") {
         return Math.sqrt((difference.x * difference.x) + (difference.y * difference.y));
     };
     this.angleBetween = function(point) {	  
-        let degrees = Math.atan2(this.x - point.x, this.y - point.y) * 180 / Math.PI; 
-        degrees = Math.abs(degrees);  
-        return degrees;	
+        let result = Math.atan2(this.x - point.x, this.y - point.y) * 180 / Math.PI;
+        let zeroDegreeIsUp = (result < 0 ? 360 + result : result) % 360;
+        return (zeroDegreeIsUp + 90) % 360;
     }; 
     this.change = function(x,y) {
         this.x = x;
