@@ -19,5 +19,12 @@ function TowerObj(sprite, point, level) {
     this.move = function(point) {
         this.point = point;
     };
+    this.setTarget = function(point) {
+        const span = 360 / 8, degreeOffset = span / 2;
+        let angle = this.point.angleBetween(point);
+        // Mirror so 0 degrees is on the left increasing clockwise
+        let mirrorAngle = (angle > 180 ? 180 - angle + 360 : 180 - angle);
+        this.col = Math.floor((mirrorAngle + degreeOffset) % 360 / span);
+    };
 }
 
