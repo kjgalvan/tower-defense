@@ -23,6 +23,13 @@ function GameObj(canvas) {
         let rect = canvas.getBoundingClientRect();
         this.mousePos.change(e.clientX - rect.x, e.clientY - rect.y);
     };
+    this.getTowerAtPoint = function(point) {
+        for (let tower of this.towers) {
+            if (tower.point.equals(point.x, point.y))
+                return tower;
+        }
+        return undefined;
+    };
     this.mouseDown = function() {
         let clicked = this.towerMenu.cellClicked(this.mousePos);
         let mouseGridPos = this.mouseToGrid();
@@ -34,15 +41,10 @@ function GameObj(canvas) {
         else if (this.map.isMap(mouseGridPos) &&
                  this.map.getGridVal(mouseGridPos) === 0)
         {
-            let iPoint = this.map.gridToIso(mouseGridPos);
-            let tileCenter = iPoint.add(0, this.isometricSize / 2);
-            console.log(this.towers);
-            for (let tower of this.towers) {
-                if (tileCenter.equals(tower.point.x, tower.point.y)) {
-                    tower.upgrade();
-                    break;
-                }
-            }
+            let tileCenter = this.map.gridToTileCenter(mouseGridPos);
+            let tower = this.getTowerAtPoint(tileCenter);
+            if (tower)
+                tower.upgrade();
         }
     };
     this.mouseUp = function() {
@@ -50,17 +52,10 @@ function GameObj(canvas) {
         if (this.clickedTower !== undefined && this.map.isMap(mouseGridPos) &&
             this.map.getGridVal(mouseGridPos) === 0)
         {
-            let iPoint = this.map.gridToIso(mouseGridPos);
-            let tileCenter = iPoint.add(0, this.isometricSize / 2);
-            let occupied = false;
-            for (let tower of this.towers) {
-                if (tileCenter.equals(tower.point.x, tower.point.y)) {
-                    occupied = true;
-                    break;
-                }
-            }
-            if (!occupied) {
-                this.clickedTower.point = iPoint.add(0, this.isometricSize / 2);
+            let tileCenter = this.map.gridToTileCenter(mouseGridPos);
+            let tower = this.getTowerAtPoint(tileCenter);
+            if (!tower) {
+                this.clickedTower.point = tileCenter;
                 this.towers.push(this.clickedTower);
             }
         }
