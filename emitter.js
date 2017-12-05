@@ -4,11 +4,12 @@ function Emitter(point,direction,lifespan,numberofparticles,partSprite) {
     this.location = point; //PointObj for drawPos
     this.direction = direction; //PointObj for initial direction
     this.lifespan = lifespan;
+    this.mySound = new Sound("Sound/NFF-laser-gun-03.wav");
     
     this.renew = function(direction,location,lifespan) {
         this.location = location;
         this.direction = direction;
-        this.lifespan = lifespan;  
+        this.lifespan = lifespan;
     };
     this.update = function(direction) {
         this.direction = direction;
@@ -28,6 +29,7 @@ function Emitter(point,direction,lifespan,numberofparticles,partSprite) {
         for (var i = 0; i < count; i++) {
             for (var j = 0; j < this.particles.length; j++) {
                 if (this.particles[j].isDead()) {
+                    this.mySound.play();
                     this.particles[j].renew(this.direction,new PointObj(this.location.x,this.location.y),this.lifespan);             
                     break;
                 }
