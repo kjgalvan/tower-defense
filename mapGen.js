@@ -54,6 +54,10 @@ function MapObj(tiles) {
             }
         }
     };
+    this.gridToTileCenter = function(gridPoint) {
+        let iPoint = gridPoint.multi(this.isometricSize).convert();
+        return iPoint.add(0, this.isometricSize / 2);
+    };
     this.getGridPos = function(Point) {
         Point = Point.type == "Cartesian" ? Point : Point.convert();
         return Point.fdiv(this.isometricSize);

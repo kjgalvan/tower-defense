@@ -3,7 +3,6 @@ function GameObj(canvas) {
     this.context = canvas.getContext('2d');
     this.frame = 0;
     this.mousePos = new PointObj(-1, -1);
-    //this.towerOffset = new PointObj(-1,-1);
     this.clickedTower = undefined;
     this.sprites = {
         "towers": new SpriteObj(this.context, "sprites/Towers.png", 27, 8),
@@ -11,7 +10,6 @@ function GameObj(canvas) {
         "slime": new SpriteObj(this.context, "sprites/SlimeIso.png", 4, 4),
         "balls": new SpriteObj(this.context, "sprites/Energy Ball.png", 8, 12),
     };
-    this.clickedTowerObj = new TowerObj(this.sprites["towers"], this.mousePos, 0, false, this.sprites.balls);
     this.map = new MapObj(new TileSetObj(this.sprites["roads"]));
     this.towerMenu = new MenuDisplayObj(
         this.sprites["towers"], new PointObj(20, 380), new PointObj(30, 0));
@@ -19,34 +17,50 @@ function GameObj(canvas) {
     this.waves = [], this.towers = [];
     this.mouseToGrid = function() {
         let iMousePoint = new PointObj(this.mousePos.x - this.canvas.width / 2,
-                                    this.mousePos.y, "isometric");
+                                       this.mousePos.y, "isometric");
         return this.map.getGridPos(iMousePoint);
     };
     this.mouseMove = function(e) {
         let rect = canvas.getBoundingClientRect();
         this.mousePos.change(e.clientX - rect.x, e.clientY - rect.y);
     };
+    this.getTowerAtPoint = function(point) {
+        for (let tower of this.towers) {
+            if (tower.point.equals(point.x, point.y))
+                return tower;
+        }
+        return undefined;
+    };
     this.mouseDown = function() {
-        let cell = this.towerMenu.cellClicked(this.mousePos);
-        if (cell.y === 0 && cell.x >= 0 && cell.x <= 8) {
-            this.clickedTower = cell;
-            this.clickedTowerObj.changeTower(this.clickedTower.x*3);
-            this.towerOffset = this.towerMenu.origin.add(
-                this.clickedTower.x * (this.towerMenu.sprite.width + this.towerMenu.spacing.x),
-                this.clickedTower.y * (this.towerMenu.sprite.height + this.towerMenu.spacing.y));
-            this.towerOffset = this.towerOffset.add(-this.mousePos.x,-this.mousePos.y);
+        let clicked = this.towerMenu.cellClicked(this.mousePos);
+        let mouseGridPos = this.mouseToGrid();
+        if (clicked.cell.y === 0 && clicked.cell.x >= 0 && clicked.cell.x < 9)
+        {
+            this.clickedTower = new TowerObj(
+                this.sprites["towers"], clicked.innerPos, clicked.cell.x * 3,
+                false, this.sprites.balls);
+        }
+        else if (this.map.isMap(mouseGridPos) &&
+                 this.map.getGridVal(mouseGridPos) === 0)
+        {
+            let tileCenter = this.map.gridToTileCenter(mouseGridPos);
+            let tower = this.getTowerAtPoint(tileCenter);
+            if (tower)
+                tower.upgrade();
         }
     };
     this.mouseUp = function() {
-        if (this.clickedTower !== undefined && this.map.isMap(this.mouseToGrid()) && (this.map.getGridVal(this.mouseToGrid()) === 0)) {
-            towerCheck = false;
-            for (tower of this.towers) {
-                if ((this.map.getGridPos(tower.point).x === this.mouseToGrid().x) && (this.map.getGridPos(tower.point).y === this.mouseToGrid().y))
-                    towerCheck = true;
+        let mouseGridPos = this.mouseToGrid();
+        if (this.clickedTower !== undefined && this.map.isMap(mouseGridPos) &&
+            this.map.getGridVal(mouseGridPos) === 0)
+        {
+            let tileCenter = this.map.gridToTileCenter(mouseGridPos);
+            let tower = this.getTowerAtPoint(tileCenter);
+            if (!tower) {
+                this.clickedTower.setPoint(tileCenter);
+                this.clickedTower.isEmitterOn = true;
+                this.towers.push(this.clickedTower);
             }
-            if (towerCheck === false) 
-                this.towers.push(new TowerObj(this.sprites["towers"], this.map.gridToIso(this.mouseToGrid()).add(0, this.map.getTilesHeight() / 2),
-                                    this.clickedTower.x*3, true, this.sprites.balls));
         }
         this.clickedTower = undefined;
     };
@@ -93,17 +107,12 @@ function GameObj(canvas) {
             wave.update(this.frame, this.isometricSize,
                         this.getNewCreepHeading.bind(this), this.map.directions);
         }
-        if (this.clickedTower !== undefined)
-            this.clickedTowerObj.move(this.mousePos);
         for(tower of this.towers) {
             for(wave of this.waves) {
                 for(creep of wave.creeps) {
                     if(tower.point.distFrom(creep.point) < 100) {
-                        //console.log(tower.point.getVector(creep.point));
+                        tower.setTarget(creep.point);
                         tower.emitter.update(tower.point.getVector(creep.point));
-                        //tower.emitter.update(new PointObj(20,20));
-                        //console.log(tower.point);
-                        //console.log(tower.point.angleBetween(creep.point));
                         break;
                     }
                 }
@@ -124,8 +133,9 @@ function GameObj(canvas) {
         for (tower of this.towers)
             tower.draw();
         this.context.restore();
-        if (this.clickedTower !== undefined)
-            this.clickedTowerObj.draw();
+        if (this.clickedTower !== undefined) {
+            this.clickedTower.draw(this.mousePos);
+        }
     };
     this.loop = function() {
         this.update();

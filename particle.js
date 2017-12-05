@@ -15,7 +15,6 @@ function Particle(location,direction,lifespan,partSprite) {
         this.lifespan-=2.0;
     };
     this.draw = function() {
-        console.log();
         this.sprite.draw(1, 1 , this.location.x - (this.sprite.width/2), this.location.y - (this.sprite.height/2)); 
     };
     this.isDead = function() {
