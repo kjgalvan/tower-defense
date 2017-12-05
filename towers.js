@@ -1,20 +1,19 @@
-function TowerObj(sprite, point, level) {
+function TowerObj(sprite, point, type) {
     this.sprite = sprite;
     this.point = point;
-    this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
-    this.level = level;
+    this.centerFeet = new PointObj(this.sprite.width / 2, this.sprite.height);
+    this.type = type;
+    this.level = 0;
     this.col = 6;
     this.draw = function(point) {
         let drawPos = ((point === undefined)
-            ? this.point.add(this.centerFeet.x, this.centerFeet.y)
+            ? this.point.sub(this.centerFeet.x, this.centerFeet.y)
             : this.point.add(point.x, point.y));
-        this.sprite.draw(this.col, this.level, drawPos.x, drawPos.y);
+        this.sprite.draw(
+            this.col, this.type + this.level, drawPos.x, drawPos.y);
     };
     this.upgrade = function() {
-        this.level = (this.level + 1) % 3;
-    };
-    this.changeTower = function(level) {
-        this.level = level;
+        this.level += this.level < 2 ? 1 : 0;
     };
     this.move = function(point) {
         this.point = point;
