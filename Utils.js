@@ -18,6 +18,9 @@ function PointObj(x, y, type="Cartesian") {
     this.convert = function() {
         return this.type == "Cartesian" ? this.toIsometric() : this.toCartesian();
     };
+    this.equals = function(x, y) {
+        return this.x == x && this.y == y;
+    };
     this.add = function(z, y=undefined) {
         y = (y === undefined ? z : y);
         return new PointObj(this.x + z, this.y + y, this.type);

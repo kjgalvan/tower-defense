@@ -25,9 +25,25 @@ function GameObj(canvas) {
     };
     this.mouseDown = function() {
         let clicked = this.towerMenu.cellClicked(this.mousePos);
-        if (clicked.cell.y === 0 && clicked.cell.x >= 0 && clicked.cell.x < 9) {
+        let mouseGridPos = this.mouseToGrid();
+        if (clicked.cell.y === 0 && clicked.cell.x >= 0 && clicked.cell.x < 9)
+        {
             this.clickedTower = new TowerObj(
                 this.sprites["towers"], clicked.innerPos, clicked.cell.x * 3);
+        }
+        else if (this.map.isMap(mouseGridPos) &&
+                 this.map.getGridVal(mouseGridPos) === 0)
+        {
+            let iPoint = this.map.gridToIso(mouseGridPos);
+            let tileCenter = iPoint.add(0, this.isometricSize / 2);
+            console.log(this.towers);
+            for (let tower of this.towers) {
+                console.log(tower);
+                if (tileCenter.equals(tower.point.x, tower.point.y)) {
+                    tower.upgrade();
+                    break;
+                }
+            }
         }
     };
     this.mouseUp = function() {
@@ -110,7 +126,6 @@ function GameObj(canvas) {
             tower.draw();
         this.context.restore();
         if (this.clickedTower !== undefined) {
-            console.log(this.mousePos);
             this.clickedTower.draw(this.mousePos);
         }
     };
