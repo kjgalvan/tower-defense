@@ -38,7 +38,6 @@ function GameObj(canvas) {
             let tileCenter = iPoint.add(0, this.isometricSize / 2);
             console.log(this.towers);
             for (let tower of this.towers) {
-                console.log(tower);
                 if (tileCenter.equals(tower.point.x, tower.point.y)) {
                     tower.upgrade();
                     break;
@@ -52,8 +51,18 @@ function GameObj(canvas) {
             this.map.getGridVal(mouseGridPos) === 0)
         {
             let iPoint = this.map.gridToIso(mouseGridPos);
-            this.clickedTower.point = iPoint.add(0, this.isometricSize / 2);
-            this.towers.push(this.clickedTower);
+            let tileCenter = iPoint.add(0, this.isometricSize / 2);
+            let occupied = false;
+            for (let tower of this.towers) {
+                if (tileCenter.equals(tower.point.x, tower.point.y)) {
+                    occupied = true;
+                    break;
+                }
+            }
+            if (!occupied) {
+                this.clickedTower.point = iPoint.add(0, this.isometricSize / 2);
+                this.towers.push(this.clickedTower);
+            }
         }
         this.clickedTower = undefined;
     };
