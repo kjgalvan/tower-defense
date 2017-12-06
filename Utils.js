@@ -56,7 +56,10 @@ function PointObj(x, y, type="Cartesian") {
     };
     this.distFrom = function(point) {
         let difference = this.aSub(point.x, point.y);
-        return Math.sqrt((difference.x * difference.x) + (difference.y * difference.y));
+         if (this.type === "Isometric")
+             difference.x = Math.floor(difference.x / 2);
+        return Math.sqrt(
+            (difference.x * difference.x) + (difference.y * difference.y));
     };
     this.angleBetween = function(point) {	  
         return Math.atan2(point.y - this.y, point.x - this.x) * 180 / Math.PI;

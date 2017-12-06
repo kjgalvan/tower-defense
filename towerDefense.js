@@ -82,8 +82,8 @@ function GameObj(canvas) {
         this.context.strokeStyle = "SteelBlue";
         this.context.fillStyle = "rgba(30, 144, 255, 0.20)";
         this.context.beginPath();
-        this.context.arc(
-            tower.point.x, tower.point.y, tower.range, 0, 2 * Math.PI);
+        this.context.ellipse(tower.point.x, tower.point.y, tower.range * 2,
+                             tower.range, 0, 0, 2 * Math.PI);
         this.context.stroke();
         this.context.fill();
     };
