@@ -7,7 +7,7 @@ function CreepObj(sprite, point, heading, health, wavePos, creationFrame) {
     this.creationFrame = creationFrame;
     this.centerFeet = new PointObj(-this.sprite.width / 2, -this.sprite.height);
     this.col = 0;
-    this.changeFacing = { "N": 0, "S": 1, "E": 2, "W": 3, };
+    this.changeFacing = { "N": 0, "S": 1, "E": 2, "W": 3 };
     this.facing = this.changeFacing[this.heading];
     this.setHeading = function(heading) {
         this.heading = heading;
