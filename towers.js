@@ -1,14 +1,19 @@
-function TowerObj(sprite, point, type, emitterOn, partSprite) {
+function TowerObj(sprite, point, type, variations, emitterOn, partSprite) {
     this.sprite = sprite;
     this.point = point;
-    this.emitter = new Emitter(this.point,new PointObj(0,0),80,1,partSprite);
-    this.centerFeet = new PointObj(this.sprite.width / 2, this.sprite.height);
     this.type = type;
-    this.level = 0;
-    this.range = 60;
-    this.col = 6;
+    this.variations = variations.slice(type, type + 3);
     this.isEmitterOn = emitterOn;
-    this.target = undefined;
+    this.emitter = new Emitter(this.point, new PointObj(0, 0), 80,
+        this.variations[0].pAmount, partSprite);
+    this.centerFeet = new PointObj(this.sprite.width / 2, this.sprite.height);
+    this.level = 0;
+    this.damage = this.variations[this.level].damage;
+    this.pSize = this.variations[this.level].pSize;
+    this.range = this.variations[this.level].range;
+    this.reload = this.currentReload = this.variations[this.level].reload;
+    this.speed = this.variations[this.level].speed;
+    this.col = 6;
     this.draw = function(point) {
         let drawPos = ((point === undefined)
             ? this.point.sub(this.centerFeet.x, this.centerFeet.y)
@@ -20,6 +25,11 @@ function TowerObj(sprite, point, type, emitterOn, partSprite) {
     };
     this.upgrade = function() {
         this.level += this.level < 2 ? 1 : 0;
+        this.damage = this.variations[this.level].damage;
+        this.pSize = this.variations[this.level].pSize;
+        this.range = this.variations[this.level].range;
+        this.reload = this.variations[this.level].reload;
+        this.speed = this.variations[this.level].speed;
     };
     this.setPoint = function(point) {
         this.point = point;

@@ -15,6 +15,45 @@ function GameObj(canvas) {
         this.sprites["towers"], new PointObj(20, 380), new PointObj(30, 0));
     this.isometricSize = this.map.isometricSize;
     this.waves = [], this.towers = [];
+    // 62.5 - 25, avg44
+    this.towerVariations = [
+        // cannon
+        {"damage": 8, "range": 42, "pAmount": 1, "pSize": 25, "reload": 75, "speed": 6},
+        {"damage": 12, "range": 42, "pAmount": 1, "pSize": 25, "reload": 75, "speed": 6},
+        {"damage": 16, "range": 42, "pAmount": 1, "pSize": 25, "reload": 75, "speed": 6},
+        // flame
+        {"damage": 0.2, "range": 42, "pAmount": 20, "pSize": 10, "reload": 0, "speed": 6},
+        {"damage": 0.35, "range": 42, "pAmount": 20, "pSize": 10, "reload": 0, "speed": 6},
+        {"damage": 0.5, "range": 42, "pAmount": 20, "pSize": 10, "reload": 0, "speed": 6},
+        // tesla
+        {"damage": 0.3, "range": 42, "pAmount": 20, "pSize": 10, "reload": 0, "speed": 6},
+        {"damage": 0.3, "range": 52, "pAmount": 20, "pSize": 10, "reload": 0, "speed": 6},
+        {"damage": 0.3, "range": 62, "pAmount": 20, "pSize": 10, "reload": 0, "speed": 6},
+        // egg gun
+        {"damage": 4, "range": 48, "pAmount": 3, "pSize": 25, "reload": 30, "speed": 2},
+        {"damage": 4, "range": 48, "pAmount": 3, "pSize": 25, "reload": 25, "speed": 2},
+        {"damage": 4, "range": 48, "pAmount": 3, "pSize": 25, "reload": 20, "speed": 2},
+        // machine gun
+        {"damage": 0.5, "range": 62, "pAmount": 6, "pSize": 10, "reload": 6, "speed": 6},
+        {"damage": 1.0, "range": 62, "pAmount": 6, "pSize": 10, "reload": 6, "speed": 6},
+        {"damage": 1.5, "range": 62, "pAmount": 6, "pSize": 10, "reload": 6, "speed": 6},
+        // untitled
+        {"damage": 8, "range": 62, "pAmount": 6, "pSize": 8, "reload": 15, "speed": 2},
+        {"damage": 8, "range": 62, "pAmount": 6, "pSize": 8, "reload": 15, "speed": 4},
+        {"damage": 8, "range": 62, "pAmount": 6, "pSize": 8, "reload": 15, "speed": 6},
+        // missile
+        {"damage": 3, "range": 80, "pAmount": 6, "pSize": 25, "reload": 30, "speed": 12},
+        {"damage": 3, "range": 120, "pAmount": 6, "pSize": 25, "reload": 30, "speed": 12},
+        {"damage": 3, "range": 160, "pAmount": 6, "pSize": 25, "reload": 30, "speed": 12},
+        // shotgun
+        {"damage": 4, "range": 48, "pAmount": 3, "pSize": 25, "reload": 30, "speed": 5},
+        {"damage": 4, "range": 48, "pAmount": 3, "pSize": 30, "reload": 30, "speed": 5},
+        {"damage": 4, "range": 48, "pAmount": 3, "pSize": 35, "reload": 30, "speed": 5},
+        // untitled2
+        {"damage": 4, "range": 60, "pAmount": 6, "pSize": 10, "reload": 30, "speed": 8},
+        {"damage": 4, "range": 80, "pAmount": 6, "pSize": 10, "reload": 30, "speed": 8},
+        {"damage": 4, "range": 100, "pAmount": 6, "pSize": 10, "reload": 30, "speed": 8},
+    ];
     this.mouseToGrid = function() {
         let iMousePoint = new PointObj(this.mousePos.x - this.canvas.width / 2,
                                        this.mousePos.y, "isometric");
@@ -38,7 +77,7 @@ function GameObj(canvas) {
         {
             this.clickedTower = new TowerObj(
                 this.sprites["towers"], clicked.innerPos, clicked.cell.x * 3,
-                false, this.sprites.balls);
+                this.towerVariations, false, this.sprites.balls);
         }
         else if (this.map.isMap(mouseGridPos) &&
                  this.map.getGridVal(mouseGridPos) === 0)
@@ -118,20 +157,24 @@ function GameObj(canvas) {
             for(wave of this.waves) {
                 for(creep of wave.creeps) {
                     for (let particle of tower.emitter.getLiveParticles()) {
-                        if(creep.point.distFrom(particle.location) < 20) {
+                        if(creep.point.distFrom(particle.location) < tower.pSize) {
                             particle.lifespan = 0;
-                            creep.health -= 3;
-                            break;
+                            creep.health -= tower.damage;
                         }
                     }
                     if(tower.point.distFrom(creep.point) < tower.range) {
                         tower.setTarget(creep.point);
-                        tower.emitter.direction = tower.point.getVector(creep.point).multi(3);
-                        tower.emitter.addparticle();
+                        tower.emitter.direction = tower.point.getVector(
+                            creep.point).multi(tower.speed);
+                        if (tower.currentReload <= 0) {
+                            tower.emitter.addparticle();
+                            tower.currentReload = tower.reload;
+                        }
                         break;
                     }
                 }
             }
+            --tower.currentReload;
             tower.emitter.update();
         }
     };

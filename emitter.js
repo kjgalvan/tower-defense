@@ -24,12 +24,10 @@ function Emitter(point,direction,lifespan,numberofparticles,partSprite) {
     };
     this.addparticle = function() {
         for (var i = 0; i < this.particleCount; i++) {
-            for (var j = 0; j < this.particles.length; j++) {
-                if (this.particles[j].isDead()) {
-                    this.mySound.play();
-                    this.particles[j].renew(this.direction,new PointObj(this.location.x,this.location.y),this.lifespan);             
-                    break;
-                }
+            if (this.particles[i].isDead()) {
+                this.mySound.play();
+                this.particles[i].renew(this.direction,new PointObj(this.location.x,this.location.y),this.lifespan);             
+                break;
             }
         }
     };
