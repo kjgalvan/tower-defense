@@ -5,6 +5,7 @@ function TowerObj(sprite, point, type, emitterOn, partSprite) {
     this.centerFeet = new PointObj(this.sprite.width / 2, this.sprite.height);
     this.type = type;
     this.level = 0;
+    this.range = 60;
     this.col = 6;
     this.isEmitterOn = emitterOn;
     this.projHeading = undefined;

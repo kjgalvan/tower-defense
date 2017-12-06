@@ -77,6 +77,16 @@ function GameObj(canvas) {
         this.context.stroke();
         this.context.fill();
     };
+    this.highlightRange = function(tower) {
+        let point = tower.point;
+        this.context.strokeStyle = "SteelBlue";
+        this.context.fillStyle = "rgba(30, 144, 255, 0.20)";
+        this.context.beginPath();
+        this.context.arc(
+            tower.point.x, tower.point.y, tower.range, 0, 2 * Math.PI);
+        this.context.stroke();
+        this.context.fill();
+    };
     this.init = function() {
         this.map.applyLevel({
             "mapArray": [
@@ -107,7 +117,7 @@ function GameObj(canvas) {
         for(tower of this.towers) {
             for(wave of this.waves) {
                 for(creep of wave.creeps) {
-                    if(tower.point.distFrom(creep.point) < 100) {
+                    if(tower.point.distFrom(creep.point) < tower.range) {
                         tower.setTarget(creep.point);
                         tower.emitter.direction = tower.point.getVector(creep.point).multi(3);
                         tower.emitter.addparticle();
@@ -125,8 +135,14 @@ function GameObj(canvas) {
             this.towerMenu.draw(6, i*3, new PointObj(i, 0));
         this.context.translate(this.canvas.width / 2, 0);
         this.map.draw();
-        if (this.map.isMap(this.mouseToGrid()))
-            this.highlightTile(this.mouseToGrid());
+        let mouseGridPos = this.mouseToGrid();
+        if (this.map.isMap(mouseGridPos)) {
+            this.highlightTile(mouseGridPos);
+            let tileCenter = this.map.gridToTileCenter(mouseGridPos);
+            let tower = this.getTowerAtPoint(tileCenter);
+            if (tower)
+                this.highlightRange(tower);
+        }
         for (let i = 0; i < this.waves.length; ++i) {
             let wave = this.waves[i];
             if (wave.creeps.length > 0)
