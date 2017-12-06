@@ -117,6 +117,13 @@ function GameObj(canvas) {
         for(tower of this.towers) {
             for(wave of this.waves) {
                 for(creep of wave.creeps) {
+                    for (let particle of tower.emitter.getLiveParticles()) {
+                        if(creep.point.distFrom(particle.location) < 20) {
+                            particle.lifespan = 0;
+                            creep.health -= 3;
+                            break;
+                        }
+                    }
                     if(tower.point.distFrom(creep.point) < tower.range) {
                         tower.setTarget(creep.point);
                         tower.emitter.direction = tower.point.getVector(creep.point).multi(3);
@@ -156,12 +163,6 @@ function GameObj(canvas) {
         if (this.clickedTower !== undefined)
             this.clickedTower.draw(this.mousePos);
     };
-    this.plague = function() {
-        for (wave of this.waves) {
-            for (creep of wave.creeps)
-                creep.health -= Math.floor(Math.random() * 10);
-        }
-    };
     this.loop = function() {
         if (this.waves.length == 0 && this.frame % 50 == 0) {
             let create = Math.floor(Math.random() * 7) + 4;  // 4 - 10
@@ -174,10 +175,6 @@ function GameObj(canvas) {
         this.update();
         this.draw();
         ++this.frame;
-        if (this.frame % 50 == 0) {
-            this.plague();
-        }
-            
     };
     return this;
 }

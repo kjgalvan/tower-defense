@@ -8,7 +8,7 @@ function TowerObj(sprite, point, type, emitterOn, partSprite) {
     this.range = 60;
     this.col = 6;
     this.isEmitterOn = emitterOn;
-    this.projHeading = undefined;
+    this.target = undefined;
     this.draw = function(point) {
         let drawPos = ((point === undefined)
             ? this.point.sub(this.centerFeet.x, this.centerFeet.y)
@@ -26,6 +26,7 @@ function TowerObj(sprite, point, type, emitterOn, partSprite) {
         this.emitter.location = point;
     };
     this.setTarget = function(point) {
+        this.target = point;
         const span = 360 / 8, degreeOffset = span / 2;
         let result = Math.atan2(this.point.x - point.x, this.point.y - point.y) * 180 / Math.PI;
         let zeroDegreeIsUp = (result < 0 ? 360 + result : result) % 360;

@@ -39,6 +39,13 @@ function Emitter(point,direction,lifespan,numberofparticles,partSprite) {
         else
             return false;
     };
+    this.getLiveParticles = function*() {
+        for (var i = 0; i < this.particles.length; i++) {
+            if (!this.particles[i].isDead()) {
+                yield this.particles[i];
+            }
+        }
+    };
     this.poolMemory = function() {
         for(var i=0;i<this.particleCount;i++)
             this.particles[i] = new Particle(new PointObj(this.location.x,this.location.y),this.direction,-1,partSprite);
