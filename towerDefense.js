@@ -112,11 +112,13 @@ function GameObj(canvas) {
                 for(creep of wave.creeps) {
                     if(tower.point.distFrom(creep.point) < 100) {
                         tower.setTarget(creep.point);
-                        tower.emitter.update(tower.point.getVector(creep.point));
+                        tower.emitter.direction = tower.point.getVector(creep.point).multi(3);
+                        tower.emitter.addparticle();
                         break;
                     }
                 }
             }
+            tower.emitter.update();
         }
     };
     this.draw = function() {

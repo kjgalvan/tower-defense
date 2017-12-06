@@ -1,12 +1,13 @@
 function TowerObj(sprite, point, type, emitterOn, partSprite) {
     this.sprite = sprite;
     this.point = point;
-    this.emitter = new Emitter(this.point,new PointObj(0,0),300,1,partSprite);
+    this.emitter = new Emitter(this.point,new PointObj(0,0),80,1,partSprite);
     this.centerFeet = new PointObj(this.sprite.width / 2, this.sprite.height);
     this.type = type;
     this.level = 0;
     this.col = 6;
     this.isEmitterOn = emitterOn;
+    this.projHeading = undefined;
     this.draw = function(point) {
         let drawPos = ((point === undefined)
             ? this.point.sub(this.centerFeet.x, this.centerFeet.y)

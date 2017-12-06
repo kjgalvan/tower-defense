@@ -9,8 +9,7 @@ function Particle(location,direction,lifespan,partSprite) {
         this.location = location;
         this.lifespan = lifespan;
     };
-    this.update = function(direction) { 
-        this.direction = direction;
+    this.update = function() { 
         this.location.iAdd(this.direction);
         this.lifespan-=2.0;
     };

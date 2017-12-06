@@ -12,21 +12,18 @@ function Emitter(point,direction,lifespan,numberofparticles,partSprite) {
         this.lifespan = lifespan;
     };
     this.update = function(direction) {
-        this.direction = direction;
         for(var i=0;i<this.particleCount;i++) {
-            this.particles[i].update(this.direction);
+            this.particles[i].update();
         }
     };
     this.draw = function() {  
         for(var i=0;i<this.particleCount;i++) {
-            this.particles[i].update(this.direction);
             if(!this.particles[i].isDead())
                 this.particles[i].draw();
         } 
-        this.addparticle(3);
     };
-    this.addparticle = function(count) {
-        for (var i = 0; i < count; i++) {
+    this.addparticle = function() {
+        for (var i = 0; i < this.particleCount; i++) {
             for (var j = 0; j < this.particles.length; j++) {
                 if (this.particles[j].isDead()) {
                     this.mySound.play();
