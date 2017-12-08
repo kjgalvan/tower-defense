@@ -53,7 +53,14 @@ function GameObj(canvas) {
         this.context.restore();
     };
     this.loop = function() {
-        if(!this.pause){
+        if(this.pause){
+            this.context.save()
+            this.context.font = "48px Arial"
+            this.context.fillText(
+                "PAUSED", this.canvas.width/2 - 100, this.canvas.height/2);
+            this.context.restore();
+        }
+        else {
             this.update();
             this.draw();
             ++this.frame;
